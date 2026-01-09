@@ -1,0 +1,142 @@
+.bache-detail-container {
+  max-width: 900px;
+  margin: 0 auto;
+  padding: 2rem;
+}
+
+.back-button {
+  background: none;
+  border: none;
+  color: #3498db;
+  cursor: pointer;
+  font-size: 1rem;
+  margin-bottom: 1rem;
+  padding: 0.5rem 0;
+}
+
+.back-button:hover {
+  text-decoration: underline;
+}
+
+.bache-detail {
+  background: white;
+  padding: 2rem;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.bache-detail-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1rem;
+  flex-wrap: wrap;
+  gap: 1rem;
+}
+
+.bache-detail-header h1 {
+  color: #2c3e50;
+  flex: 1;
+}
+
+.bache-detail-estado {
+  padding: 0.5rem 1rem;
+  border-radius: 20px;
+  font-weight: 600;
+  font-size: 0.9rem;
+}
+
+.bache-detail-estado-reportado {
+  background-color: #f39c12;
+  color: white;
+}
+
+.bache-detail-estado-en_proceso {
+  background-color: #3498db;
+  color: white;
+}
+
+.bache-detail-estado-solucionado {
+  background-color: #27ae60;
+  color: white;
+}
+
+.bache-detail-info {
+  margin-bottom: 1.5rem;
+  padding-bottom: 1rem;
+  border-bottom: 1px solid #ecf0f1;
+}
+
+.bache-detail-location {
+  font-size: 1.1rem;
+  color: #34495e;
+  margin-bottom: 0.5rem;
+}
+
+.bache-detail-date {
+  color: #7f8c8d;
+  margin-bottom: 0.5rem;
+}
+
+.bache-detail-solution {
+  color: #27ae60;
+  font-weight: 600;
+}
+
+.bache-detail-description {
+  color: #2c3e50;
+  line-height: 1.6;
+  margin-bottom: 2rem;
+  font-size: 1.05rem;
+}
+
+.bache-detail-images {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 1rem;
+  margin-bottom: 2rem;
+}
+
+.bache-detail-image {
+  width: 100%;
+  height: 200px;
+  object-fit: cover;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.bache-detail-actions {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1rem 0;
+  border-top: 1px solid #ecf0f1;
+  border-bottom: 1px solid #ecf0f1;
+  margin-bottom: 2rem;
+}
+
+.vote-button {
+  background-color: #3498db;
+  color: white;
+  border: none;
+  padding: 0.75rem 1.5rem;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 1rem;
+  transition: background-color 0.3s;
+}
+
+.vote-button:hover:not(:disabled) {
+  background-color: #2980b9;
+}
+
+.vote-button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.bache-detail-author {
+  color: #7f8c8d;
+  font-size: 0.9rem;
+}
+

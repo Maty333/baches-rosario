@@ -1,0 +1,58 @@
+# Dependencias
+node_modules/
+**/node_modules/
+
+# Variables de entorno
+.env
+.env.local
+.env.*.local
+
+# Build outputs
+dist/
+build/
+
+# Uploads (backend)
+uploads/
+**/uploads/
+
+# Logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# Sistema operativo
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+desktop.ini
+
+# IDEs y editores
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.project
+.classpath
+.settings/
+
+# Temporales
+*.tmp
+*.temp
+.cache/
+.temp/
+
+# Coverage
+coverage/
+.nyc_output/
+
+# Otros
+*.pid
+*.seed
+*.pid.lock

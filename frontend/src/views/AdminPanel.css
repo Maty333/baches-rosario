@@ -1,0 +1,104 @@
+.admin-panel-container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 2rem;
+}
+
+.admin-panel-container h1 {
+  color: #2c3e50;
+  margin-bottom: 2rem;
+}
+
+.admin-stats {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 1.5rem;
+  margin-bottom: 3rem;
+}
+
+.stat-card {
+  background: white;
+  padding: 1.5rem;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  text-align: center;
+}
+
+.stat-card h3 {
+  color: #7f8c8d;
+  font-size: 0.9rem;
+  margin-bottom: 0.5rem;
+  text-transform: uppercase;
+}
+
+.stat-number {
+  font-size: 2rem;
+  font-weight: bold;
+  color: #2c3e50;
+}
+
+.admin-baches h2 {
+  color: #2c3e50;
+  margin-bottom: 1.5rem;
+}
+
+.admin-filters {
+  margin-bottom: 1.5rem;
+}
+
+.admin-filters select {
+  padding: 0.5rem 1rem;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  font-size: 1rem;
+}
+
+.admin-baches-list {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.admin-bache-item {
+  background: white;
+  padding: 1.5rem;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 1rem;
+}
+
+.admin-bache-info {
+  flex: 1;
+}
+
+.admin-bache-info h3 {
+  color: #2c3e50;
+  margin-bottom: 0.5rem;
+}
+
+.admin-bache-info p {
+  color: #7f8c8d;
+  margin-bottom: 0.25rem;
+}
+
+.admin-bache-date {
+  font-size: 0.85rem;
+}
+
+.admin-bache-actions {
+  display: flex;
+  gap: 1rem;
+}
+
+.estado-select {
+  padding: 0.5rem 1rem;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  font-size: 1rem;
+  cursor: pointer;
+}
+
