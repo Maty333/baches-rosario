@@ -1,6 +1,6 @@
 import { Link } from "react-router-dom";
 import { ESTADOS_LABELS } from "../../utils/constants.js";
-import "./BacheCard.css";
+import "../../styles/BacheCard.css";
 
 const BacheCard = ({ bache }) => {
   const estadoClass = `bache-card-estado bache-card-estado-${bache.estado}`;

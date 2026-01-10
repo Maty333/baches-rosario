@@ -1,5 +1,5 @@
 import { useState } from "react";
-import "./ImageUpload.css";
+import "../../styles/ImageUpload.css";
 
 const ImageUpload = ({ images, onChange, maxImages = 5 }) => {
   const [previews, setPreviews] = useState([]);

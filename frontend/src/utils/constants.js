@@ -15,6 +15,11 @@ export const ESTADOS_LABELS = {
 
 export const ROSARIO_CENTER = {
   lat: -32.9442,
-  lng: -60.6505,
+  lng: -60.68,
 };
 
+// Límites geográficos de Rosario para restringir el mapa
+export const ROSARIO_BOUNDS = [
+  [-33.1, -60.85], // Suroeste (lat, lng)
+  [-32.75, -60.45], // Noreste (lat, lng)
+];

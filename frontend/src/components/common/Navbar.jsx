@@ -1,7 +1,7 @@
 import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../../context/AuthContext.jsx";
 import { useNotifications } from "../../context/NotificationContext.jsx";
-import "./Navbar.css";
+import "../../styles/Navbar.css";
 
 const Navbar = () => {
   const { user, isAuthenticated, logout, isAdmin } = useAuth();

@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { useAuth } from "../../context/AuthContext.jsx";
 import { commentsAPI } from "../../api/comments.js";
 import { toast } from "react-toastify";
-import "./CommentSection.css";
+import "../../styles/CommentSection.css";
 
 const CommentSection = ({ bacheId }) => {
   const [comments, setComments] = useState([]);

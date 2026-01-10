@@ -5,7 +5,7 @@ import BacheCard from "../components/baches/BacheCard.jsx";
 import Loading from "../components/common/Loading.jsx";
 import { useNavigate } from "react-router-dom";
 import { ESTADOS_BACHE } from "../utils/constants.js";
-import "./Home.css";
+import "../styles/Home.css";
 
 const Home = () => {
   const [baches, setBaches] = useState([]);
@@ -37,7 +37,7 @@ const Home = () => {
   return (
     <div className="home-container">
       <div className="home-header">
-        <h1>Baches en Rosario</h1>
+        <h1>Baches en la ciudad de Rosario, Santa Fe, Argentina</h1>
         <p>Reporta y sigue el estado de los baches en la ciudad</p>
         <div className="home-filters">
           <button

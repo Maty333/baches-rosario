@@ -4,7 +4,7 @@ import { bachesAPI } from "../api/baches.js";
 import { toast } from "react-toastify";
 import { ESTADOS_BACHE, ESTADOS_LABELS } from "../utils/constants.js";
 import Loading from "../components/common/Loading.jsx";
-import "./AdminPanel.css";
+import "../styles/AdminPanel.css";
 
 const AdminPanel = () => {
   const [stats, setStats] = useState(null);

@@ -6,7 +6,7 @@ import { toast } from "react-toastify";
 import CommentSection from "../components/comments/CommentSection.jsx";
 import { ESTADOS_LABELS } from "../utils/constants.js";
 import Loading from "../components/common/Loading.jsx";
-import "./BacheDetail.css";
+import "../styles/BacheDetail.css";
 
 const BacheDetail = () => {
   const { id } = useParams();

@@ -2,7 +2,7 @@ import { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { useAuth } from "../context/AuthContext.jsx";
 import { toast } from "react-toastify";
-import "./Register.css";
+import "../styles/Register.css";
 
 const Register = () => {
   const [nombre, setNombre] = useState("");
