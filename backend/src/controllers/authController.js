@@ -15,7 +15,7 @@ export const register = async (req, res) => {
       return res.status(400).json({ errors: errors.array() });
     }
 
-    const { email, password, nombre } = req.body;
+    const { email, password, nombre, apellido, edad, sexo } = req.body;
 
     // Verificar si el usuario ya existe
     const userExists = await User.findOne({ email });
@@ -28,6 +28,9 @@ export const register = async (req, res) => {
       email,
       password,
       nombre,
+      apellido,
+      edad,
+      sexo,
     });
 
     await user.save();
@@ -40,6 +43,9 @@ export const register = async (req, res) => {
         id: user._id,
         email: user.email,
         nombre: user.nombre,
+        apellido: user.apellido,
+        edad: user.edad,
+        sexo: user.sexo,
         rol: user.rol,
       },
     });

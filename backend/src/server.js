@@ -4,6 +4,7 @@ import dotenv from "dotenv";
 import { createServer } from "http";
 import { connectDB } from "./config/database.js";
 import { initializeSocket } from "./config/socket.js";
+import { swaggerSpec, swaggerUi } from "./config/swagger.js";
 import path from "path";
 import { fileURLToPath } from "url";
 import { dirname } from "path";
@@ -39,6 +40,9 @@ app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
+// Swagger Documentation
+app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerSpec));
+
 // Servir archivos estáticos (imágenes)
 app.use("/uploads", express.static(path.join(__dirname, "../uploads")));
 
@@ -49,6 +53,24 @@ app.use("/api/baches", commentsRoutes);
 app.use("/api/admin", adminRoutes);
 
 // Ruta de prueba
+/**
+ * @swagger
+ * /api/health:
+ *   get:
+ *     summary: Verificar estado de la API
+ *     tags: [Health]
+ *     responses:
+ *       200:
+ *         description: API funcionando correctamente
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: API funcionando correctamente
+ */
 app.get("/api/health", (req, res) => {
   res.json({ message: "API funcionando correctamente" });
 });
@@ -59,9 +81,10 @@ app.use((err, req, res, next) => {
   res.status(500).json({ message: err.message || "Error interno del servidor" });
 });
 
-const PORT = process.env.PORT || 3000;
+const PORT = process.env.PORT || 3001;
 
 server.listen(PORT, () => {
   console.log(`Servidor corriendo en puerto ${PORT}`);
+  console.log(`📚 Documentación Swagger disponible en http://localhost:${PORT}/api-docs`);
 });
 

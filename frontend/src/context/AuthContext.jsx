@@ -49,16 +49,34 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
-  const register = async (email, password, nombre) => {
+  const register = async (email, password, nombre, apellido, edad, sexo) => {
     try {
-      const data = await authAPI.register(email, password, nombre);
+      const data = await authAPI.register(email, password, nombre, apellido, edad, sexo);
       localStorage.setItem("token", data.token);
       setUser(data.user);
       return { success: true };
     } catch (error) {
+      // Manejar errores de validación del backend
+      if (error.response?.data?.errors) {
+        const validationErrors = error.response.data.errors;
+        // Crear un mensaje más legible agrupando errores por campo
+        const errorMessages = validationErrors.map(err => {
+          const field = err.param || err.path || "campo";
+          return `${field}: ${err.msg}`;
+        });
+        return {
+          success: false,
+          message: errorMessages.join(" | "),
+          errors: validationErrors, // También devolver los errores individuales
+        };
+      }
+      // Manejar otros tipos de errores
+      const errorMessage = error.response?.data?.message || 
+                          error.message || 
+                          "Error al registrarse. Por favor, verifica los datos ingresados.";
       return {
         success: false,
-        message: error.response?.data?.message || "Error al registrarse",
+        message: errorMessage,
       };
     }
   };

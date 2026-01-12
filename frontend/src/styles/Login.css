@@ -38,6 +38,45 @@
   border: 1px solid #ddd;
   border-radius: 4px;
   font-size: 1rem;
+  box-sizing: border-box;
+}
+
+.password-input-wrapper {
+  position: relative;
+  width: 100%;
+}
+
+.password-input-wrapper input {
+  padding-right: 3rem;
+}
+
+.password-toggle {
+  position: absolute;
+  right: 0.75rem;
+  top: 50%;
+  transform: translateY(-50%);
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0.25rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #7f8c8d;
+  transition: color 0.3s;
+}
+
+.password-toggle:hover {
+  color: #3498db;
+}
+
+.password-toggle:focus {
+  outline: none;
+  color: #3498db;
+}
+
+.password-toggle svg {
+  display: block;
 }
 
 .form-group input:focus {

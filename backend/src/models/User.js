@@ -19,6 +19,24 @@ const userSchema = new mongoose.Schema(
       type: String,
       required: true,
       trim: true,
+      minlength: 2,
+    },
+    apellido: {
+      type: String,
+      required: true,
+      trim: true,
+      minlength: 2,
+    },
+    edad: {
+      type: Number,
+      required: true,
+      min: 13,
+      max: 120,
+    },
+    sexo: {
+      type: String,
+      required: true,
+      enum: ["masculino", "femenino", "otro", "prefiero no decir"],
     },
     rol: {
       type: String,
