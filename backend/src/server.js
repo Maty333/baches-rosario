@@ -2,6 +2,8 @@ import express from "express";
 import cors from "cors";
 import dotenv from "dotenv";
 import { createServer } from "http";
+import helmet from "helmet";
+import rateLimit from "express-rate-limit";
 import { connectDB } from "./config/database.js";
 import { initializeSocket } from "./config/socket.js";
 import { swaggerSpec, swaggerUi } from "./config/swagger.js";
@@ -35,16 +37,69 @@ app.use((req, res, next) => {
 // Conectar a MongoDB
 connectDB();
 
+// Seguridad: Helmet.js - Headers de seguridad
+app.use(helmet());
+
+// CORS más restrictivo
+const corsOptions = {
+  origin: function (origin, callback) {
+    // Permitir requests sin origin (Postman, mobile apps, etc.) solo en desarrollo
+    const allowedOrigins = process.env.ALLOWED_ORIGINS
+      ? process.env.ALLOWED_ORIGINS.split(",")
+      : ["http://localhost:3000", "http://localhost:5173", "http://localhost:5174"]; // Vite default ports
+
+    // En desarrollo, permitir requests sin origin
+    if (!origin && process.env.NODE_ENV !== "production") {
+      return callback(null, true);
+    }
+
+    // En producción, solo permitir orígenes específicos
+    if (!origin || allowedOrigins.includes(origin)) {
+      callback(null, true);
+    } else {
+      callback(new Error("No permitido por CORS"));
+    }
+  },
+  credentials: true, // Permitir cookies/credenciales
+  methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
+  allowedHeaders: ["Content-Type", "Authorization"],
+  exposedHeaders: ["X-Total-Count"], // Headers que el cliente puede leer
+  maxAge: 86400, // Cache preflight requests por 24 horas
+};
+
+app.use(cors(corsOptions));
+
+// Rate Limiting general
+const generalLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutos
+  max: 100, // máximo 100 peticiones por IP en 15 minutos
+  message: "Demasiadas peticiones desde esta IP, intenta de nuevo más tarde.",
+  standardHeaders: true,
+  legacyHeaders: false,
+});
+
+// Rate Limiting para autenticación (más estricto)
+const authLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutos
+  max: 5, // máximo 5 intentos de login/registro por IP en 15 minutos
+  message: "Demasiados intentos de autenticación, intenta de nuevo más tarde.",
+  standardHeaders: true,
+  legacyHeaders: false,
+  skipSuccessfulRequests: true, // No contar peticiones exitosas
+});
+
 // Middlewares
-app.use(cors());
-app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
+app.use(express.json({ limit: "10mb" })); // Límite de tamaño del body
+app.use(express.urlencoded({ extended: true, limit: "10mb" }));
 
 // Swagger Documentation
 app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 
 // Servir archivos estáticos (imágenes)
 app.use("/uploads", express.static(path.join(__dirname, "../uploads")));
+
+// Aplicar rate limiting general a todas las rutas API
+app.use("/api/", generalLimiter);
 
 // Rutas
 app.use("/api/auth", authRoutes);

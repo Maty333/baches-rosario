@@ -2,11 +2,18 @@ import express from "express";
 import { body } from "express-validator";
 import { getComments, createComment } from "../controllers/commentController.js";
 import { authenticate } from "../middleware/auth.js";
+import { validateObjectId } from "../middleware/validateObjectId.js";
 
 const router = express.Router();
 
 const createCommentValidation = [
-  body("contenido").notEmpty().withMessage("El contenido del comentario es requerido"),
+  body("contenido")
+    .notEmpty()
+    .withMessage("El contenido del comentario es requerido")
+    .trim()
+    .escape()
+    .isLength({ min: 1, max: 500 })
+    .withMessage("El comentario debe tener entre 1 y 500 caracteres"),
 ];
 
 // Rutas específicas para comentarios: /api/baches/:id/comments
@@ -33,7 +40,7 @@ const createCommentValidation = [
  *               items:
  *                 $ref: '#/components/schemas/Comment'
  */
-router.get("/:id/comments", getComments);
+router.get("/:id/comments", validateObjectId("id"), getComments);
 
 /**
  * @swagger
@@ -76,7 +83,7 @@ router.get("/:id/comments", getComments);
  *       404:
  *         description: Bache no encontrado
  */
-router.post("/:id/comments", authenticate, createCommentValidation, createComment);
+router.post("/:id/comments", validateObjectId("id"), authenticate, createCommentValidation, createComment);
 
 export default router;
 

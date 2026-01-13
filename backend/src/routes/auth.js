@@ -1,9 +1,20 @@
 import express from "express";
 import { body } from "express-validator";
-import { register, login, getMe } from "../controllers/authController.js";
+import rateLimit from "express-rate-limit";
+import { register, login, getMe, updateProfile } from "../controllers/authController.js";
 import { authenticate } from "../middleware/auth.js";
 
 const router = express.Router();
+
+// Rate Limiting para autenticación (más estricto)
+const authLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutos
+  max: 5, // máximo 5 intentos de login/registro por IP en 15 minutos
+  message: "Demasiados intentos de autenticación, intenta de nuevo más tarde.",
+  standardHeaders: true,
+  legacyHeaders: false,
+  skipSuccessfulRequests: true, // No contar peticiones exitosas
+});
 
 // Validaciones
 const registerValidation = [
@@ -23,6 +34,7 @@ const registerValidation = [
     .isLength({ min: 2 })
     .withMessage("El nombre debe tener al menos 2 caracteres")
     .trim()
+    .escape()
     .matches(/^[a-zA-ZáéíóúÁÉÍÓÚñÑ\s]+$/)
     .withMessage("El nombre solo puede contener letras y espacios"),
   body("apellido")
@@ -31,6 +43,7 @@ const registerValidation = [
     .isLength({ min: 2 })
     .withMessage("El apellido debe tener al menos 2 caracteres")
     .trim()
+    .escape()
     .matches(/^[a-zA-ZáéíóúÁÉÍÓÚñÑ\s]+$/)
     .withMessage("El apellido solo puede contener letras y espacios"),
   body("edad")
@@ -44,6 +57,39 @@ const registerValidation = [
 const loginValidation = [
   body("email").isEmail().withMessage("Email inválido"),
   body("password").notEmpty().withMessage("La contraseña es requerida"),
+];
+
+const updateProfileValidation = [
+  body("email")
+    .optional()
+    .isEmail()
+    .withMessage("Email inválido")
+    .normalizeEmail()
+    .trim(),
+  body("nombre")
+    .optional()
+    .isLength({ min: 2 })
+    .withMessage("El nombre debe tener al menos 2 caracteres")
+    .trim()
+    .escape()
+    .matches(/^[a-zA-ZáéíóúÁÉÍÓÚñÑ\s]+$/)
+    .withMessage("El nombre solo puede contener letras y espacios"),
+  body("apellido")
+    .optional()
+    .isLength({ min: 2 })
+    .withMessage("El apellido debe tener al menos 2 caracteres")
+    .trim()
+    .escape()
+    .matches(/^[a-zA-ZáéíóúÁÉÍÓÚñÑ\s]+$/)
+    .withMessage("El apellido solo puede contener letras y espacios"),
+  body("edad")
+    .optional()
+    .isInt({ min: 13, max: 120 })
+    .withMessage("La edad debe ser un número entre 13 y 120 años"),
+  body("sexo")
+    .optional()
+    .isIn(["masculino", "femenino", "otro", "prefiero no decir"])
+    .withMessage("El sexo debe ser: masculino, femenino, otro o prefiero no decir"),
 ];
 
 /**
@@ -117,7 +163,7 @@ const loginValidation = [
  *       400:
  *         description: Error de validación o usuario ya existe
  */
-router.post("/register", registerValidation, register);
+router.post("/register", authLimiter, registerValidation, register);
 
 /**
  * @swagger
@@ -167,7 +213,7 @@ router.post("/register", registerValidation, register);
  *       401:
  *         description: Credenciales inválidas
  */
-router.post("/login", loginValidation, login);
+router.post("/login", authLimiter, loginValidation, login);
 
 /**
  * @swagger
@@ -201,6 +247,79 @@ router.post("/login", loginValidation, login);
  *         description: No autorizado
  */
 router.get("/me", authenticate, getMe);
+
+/**
+ * @swagger
+ * /api/auth/profile:
+ *   put:
+ *     summary: Actualizar perfil del usuario actual
+ *     tags: [Autenticación]
+ *     security:
+ *       - bearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               nombre:
+ *                 type: string
+ *                 minLength: 2
+ *                 example: Juan
+ *               apellido:
+ *                 type: string
+ *                 minLength: 2
+ *                 example: Pérez
+ *               email:
+ *                 type: string
+ *                 format: email
+ *                 example: nuevoemail@ejemplo.com
+ *               edad:
+ *                 type: integer
+ *                 minimum: 13
+ *                 maximum: 120
+ *                 example: 26
+ *               sexo:
+ *                 type: string
+ *                 enum: [masculino, femenino, otro, prefiero no decir]
+ *                 example: masculino
+ *     responses:
+ *       200:
+ *         description: Perfil actualizado exitosamente
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: Perfil actualizado exitosamente
+ *                 user:
+ *                   type: object
+ *                   properties:
+ *                     _id:
+ *                       type: string
+ *                     email:
+ *                       type: string
+ *                     nombre:
+ *                       type: string
+ *                     apellido:
+ *                       type: string
+ *                     edad:
+ *                       type: number
+ *                     sexo:
+ *                       type: string
+ *                     rol:
+ *                       type: string
+ *       400:
+ *         description: Error de validación o email ya en uso
+ *       401:
+ *         description: No autorizado
+ *       404:
+ *         description: Usuario no encontrado
+ */
+router.put("/profile", authenticate, updateProfileValidation, updateProfile);
 
 export default router;
 

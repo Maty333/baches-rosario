@@ -100,3 +100,43 @@ export const getMe = async (req, res) => {
   }
 };
 
+export const updateProfile = async (req, res) => {
+  try {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      return res.status(400).json({ errors: errors.array() });
+    }
+
+    const { nombre, apellido, email, edad, sexo } = req.body;
+    const user = await User.findById(req.user.id);
+
+    if (!user) {
+      return res.status(404).json({ message: "Usuario no encontrado" });
+    }
+
+    // Si se actualiza el email, verificar que no esté en uso por otro usuario
+    if (email && email !== user.email) {
+      const emailExists = await User.findOne({ email });
+      if (emailExists) {
+        return res.status(400).json({ message: "El email ya está en uso" });
+      }
+      user.email = email;
+    }
+
+    // Actualizar campos si se proporcionan
+    if (nombre) user.nombre = nombre;
+    if (apellido) user.apellido = apellido;
+    if (edad) user.edad = edad;
+    if (sexo) user.sexo = sexo;
+
+    await user.save();
+
+    const updatedUser = await User.findById(user._id).select("-password");
+    res.json({
+      message: "Perfil actualizado exitosamente",
+      user: updatedUser,
+    });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};

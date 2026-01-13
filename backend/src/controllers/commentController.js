@@ -10,6 +10,10 @@ export const getComments = async (req, res) => {
 
     res.json(comments);
   } catch (error) {
+    // Manejar errores de ObjectId inválido
+    if (error.name === "CastError" || error.message.includes("Cast to ObjectId")) {
+      return res.status(400).json({ message: "ID inválido" });
+    }
     res.status(500).json({ message: error.message });
   }
 };
@@ -44,6 +48,10 @@ export const createComment = async (req, res) => {
 
     res.status(201).json(comment);
   } catch (error) {
+    // Manejar errores de ObjectId inválido
+    if (error.name === "CastError" || error.message.includes("Cast to ObjectId")) {
+      return res.status(400).json({ message: "ID inválido" });
+    }
     res.status(500).json({ message: error.message });
   }
 };
