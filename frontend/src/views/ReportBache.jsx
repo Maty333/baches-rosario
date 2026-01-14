@@ -30,6 +30,16 @@ const ReportBache = () => {
       return;
     }
 
+    if (images.length < 2) {
+      toast.error("Debes subir mínimo 2 imágenes");
+      return;
+    }
+
+    if (!data.posicion) {
+      toast.error("Debes seleccionar la posición del bache");
+      return;
+    }
+
     setLoading(true);
     try {
       await bachesAPI.create(
@@ -45,7 +55,11 @@ const ReportBache = () => {
       toast.success("Bache reportado exitosamente");
       navigate("/");
     } catch (error) {
-      toast.error(error.response?.data?.message || "Error al reportar bache");
+      const errorMessage =
+        error.response?.data?.message ||
+        error.response?.data?.errors?.map((e) => e.msg).join(", ") ||
+        "Error al reportar bache";
+      toast.error(errorMessage);
     } finally {
       setLoading(false);
     }
@@ -194,11 +208,30 @@ const ReportBache = () => {
           </div>
 
           <div className="form-group">
-            <label>Imágenes (opcional, máximo 5)</label>
-            <ImageUpload images={images} onChange={setImages} maxImages={5} />
+            <label htmlFor="posicion">Posición en la calle *</label>
+            <select
+              id="posicion"
+              {...register("posicion", { required: "La posición es requerida" })}
+            >
+              <option value="">Selecciona una opción</option>
+              <option value="medio">Medio de la calle</option>
+              <option value="derecha">Derecha</option>
+              <option value="izquierda">Izquierda</option>
+            </select>
+            {errors.posicion && (
+              <span className="error">{errors.posicion.message}</span>
+            )}
           </div>
 
-          <button type="submit" disabled={loading} className="submit-button">
+          <div className="form-group">
+            <label>Imágenes (mínimo 2, máximo 5) *</label>
+            <ImageUpload images={images} onChange={setImages} maxImages={5} minImages={2} />
+            {images.length < 2 && (
+              <span className="error">Debes subir mínimo 2 imágenes</span>
+            )}
+          </div>
+
+          <button type="submit" disabled={loading || images.length < 2} className="submit-button">
             {loading ? "Reportando..." : "Reportar Bache"}
           </button>
         </form>

@@ -31,6 +31,11 @@ const bacheSchema = new mongoose.Schema(
         required: true,
       },
     ],
+    posicion: {
+      type: String,
+      enum: ["medio", "derecha", "izquierda"],
+      required: true,
+    },
     fechaReporte: {
       type: Date,
       default: Date.now,

@@ -41,6 +41,11 @@ const createBacheValidation = [
     .escape()
     .isLength({ max: 300 })
     .withMessage("La dirección no puede exceder 300 caracteres"),
+  body("posicion")
+    .notEmpty()
+    .withMessage("La posición es requerida")
+    .isIn(["medio", "derecha", "izquierda"])
+    .withMessage("La posición debe ser: medio, derecha o izquierda"),
 ];
 
 // Validación de query parameters
@@ -146,6 +151,7 @@ router.get("/:id", validateObjectId("id"), getBacheById);
  *               - titulo
  *               - descripcion
  *               - ubicacion
+ *               - posicion
  *             properties:
  *               titulo:
  *                 type: string
@@ -165,11 +171,17 @@ router.get("/:id", validateObjectId("id"), getBacheById);
  *                   direccion:
  *                     type: string
  *                     example: Av. Pellegrini 1234
+ *               posicion:
+ *                 type: string
+ *                 enum: [medio, derecha, izquierda]
+ *                 example: medio
  *               imagenes:
  *                 type: array
  *                 items:
  *                   type: string
  *                   format: binary
+ *                 minItems: 2
+ *                 maxItems: 5
  *     responses:
  *       201:
  *         description: Bache creado exitosamente

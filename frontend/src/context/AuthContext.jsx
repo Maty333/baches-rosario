@@ -15,6 +15,17 @@ export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
 
+  const mapValidationErrors = (validationErrors = []) => {
+    const errorMessages = validationErrors.map((err) => {
+      const field = err.param || err.path || "campo";
+      return `${field}: ${err.msg}`;
+    });
+    return {
+      message: errorMessages.join(" | "),
+      errors: validationErrors,
+    };
+  };
+
   useEffect(() => {
     const token = localStorage.getItem("token");
     if (token) {
@@ -42,6 +53,14 @@ export const AuthProvider = ({ children }) => {
       setUser(data.user);
       return { success: true };
     } catch (error) {
+      if (error.response?.status === 429) {
+        return {
+          success: false,
+          message:
+            error.response?.data?.message ||
+            "Demasiados intentos. Esperá unos minutos y volvé a intentar.",
+        };
+      }
       return {
         success: false,
         message: error.response?.data?.message || "Error al iniciar sesión",
@@ -56,27 +75,49 @@ export const AuthProvider = ({ children }) => {
       setUser(data.user);
       return { success: true };
     } catch (error) {
-      // Manejar errores de validación del backend
-      if (error.response?.data?.errors) {
-        const validationErrors = error.response.data.errors;
-        // Crear un mensaje más legible agrupando errores por campo
-        const errorMessages = validationErrors.map(err => {
-          const field = err.param || err.path || "campo";
-          return `${field}: ${err.msg}`;
-        });
+      if (error.response?.status === 429) {
         return {
           success: false,
-          message: errorMessages.join(" | "),
-          errors: validationErrors, // También devolver los errores individuales
+          message:
+            error.response?.data?.message ||
+            "Demasiados intentos. Esperá unos minutos y volvé a intentar.",
         };
       }
-      // Manejar otros tipos de errores
+      if (error.response?.data?.errors) {
+        return {
+          success: false,
+          ...mapValidationErrors(error.response.data.errors),
+        };
+      }
       const errorMessage = error.response?.data?.message || 
                           error.message || 
                           "Error al registrarse. Por favor, verifica los datos ingresados.";
       return {
         success: false,
         message: errorMessage,
+      };
+    }
+  };
+
+  const updateProfile = async (profileData) => {
+    try {
+      const token = localStorage.getItem("token");
+      if (!token) {
+        return { success: false, message: "No estás autenticado" };
+      }
+
+      const data = await authAPI.updateProfile(token, profileData);
+      const refreshedUser = await authAPI.getMe(token);
+      setUser(refreshedUser);
+
+      return { success: true, message: data.message || "Perfil actualizado", user: refreshedUser };
+    } catch (error) {
+      if (error.response?.data?.errors) {
+        return { success: false, ...mapValidationErrors(error.response.data.errors) };
+      }
+      return {
+        success: false,
+        message: error.response?.data?.message || "Error al actualizar el perfil",
       };
     }
   };
@@ -91,6 +132,7 @@ export const AuthProvider = ({ children }) => {
     loading,
     login,
     register,
+    updateProfile,
     logout,
     isAuthenticated: !!user,
     isAdmin: user?.rol === "admin",

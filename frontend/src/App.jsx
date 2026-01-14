@@ -3,10 +3,9 @@ import { useAuth } from "./context/AuthContext.jsx";
 import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 
-// Componentes comunes
 import Navbar from "./components/common/Navbar.jsx";
+import ConnectionStatus from "./components/common/ConnectionStatus.jsx";
 
-// Vistas
 import Home from "./views/Home.jsx";
 import Login from "./views/Login.jsx";
 import Register from "./views/Register.jsx";
@@ -46,6 +45,7 @@ function App() {
   return (
     <Router>
       <div className="App">
+        <ConnectionStatus />
         <Navbar />
         <Routes>
           <Route path="/" element={<Home />} />
@@ -69,7 +69,19 @@ function App() {
             }
           />
         </Routes>
-        <ToastContainer position="top-right" autoClose={3000} />
+        <ToastContainer
+          position="top-right"
+          autoClose={3000}
+          hideProgressBar={false}
+          newestOnTop={true}
+          closeOnClick
+          rtl={false}
+          pauseOnFocusLoss
+          draggable
+          pauseOnHover
+          theme="light"
+          limit={5}
+        />
       </div>
     </Router>
   );

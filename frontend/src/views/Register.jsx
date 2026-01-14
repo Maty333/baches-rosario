@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { useAuth } from "../context/AuthContext.jsx";
-import { toast } from "react-toastify";
+import { useToast } from "../hooks/useToast.js";
 import "../styles/Register.css";
 
 const Register = () => {
@@ -16,8 +16,8 @@ const Register = () => {
   const [loading, setLoading] = useState(false);
   const { register } = useAuth();
   const navigate = useNavigate();
+  const { showSuccess, showError } = useToast();
 
-  // Funciones de validación individuales para validación en tiempo real
   const validateNombre = (value) => {
     if (!value.trim()) {
       return "El nombre es requerido";
@@ -81,7 +81,6 @@ const Register = () => {
     return "";
   };
 
-  // Función helper para determinar si un campo es válido
   const isFieldValid = (fieldName, value) => {
     if (!value) return false;
     switch (fieldName) {
@@ -112,7 +111,6 @@ const Register = () => {
       sexo: validateSexo(sexo),
     };
 
-    // Eliminar errores vacíos
     Object.keys(newErrors).forEach(key => {
       if (!newErrors[key]) delete newErrors[key];
     });
@@ -125,12 +123,11 @@ const Register = () => {
     e.preventDefault();
     
     if (!validateForm()) {
-      // Mostrar todos los errores en el toast
       const errorMessages = Object.values(errors).filter(msg => msg);
       if (errorMessages.length > 0) {
-        toast.error(`Errores en el formulario: ${errorMessages.join(", ")}`);
+        showError(`Errores en el formulario: ${errorMessages.join(", ")}`);
       } else {
-        toast.error("Por favor, completa todos los campos requeridos");
+        showError("Por favor, completa todos los campos requeridos");
       }
       return;
     }
@@ -140,10 +137,9 @@ const Register = () => {
     const result = await register(email, password, nombre, apellido, parseInt(edad), sexo);
 
     if (result.success) {
-      toast.success("Registro exitoso");
+      showSuccess("Registro exitoso");
       navigate("/");
     } else {
-      // Si hay errores específicos del backend, mapearlos a los campos
       if (result.errors && Array.isArray(result.errors)) {
         const backendErrors = {};
         result.errors.forEach(err => {
@@ -155,13 +151,10 @@ const Register = () => {
         setErrors(prevErrors => ({ ...prevErrors, ...backendErrors }));
       }
       
-      // Mostrar el error específico del backend en el toast
       if (result.message) {
-        toast.error(result.message, {
-          autoClose: 5000,
-        });
+        showError(result.message, { autoClose: 5000 });
       } else {
-        toast.error("Error al registrarse. Por favor, verifica los datos ingresados.");
+        showError("Error al registrarse. Por favor, verifica los datos ingresados.");
       }
     }
 
@@ -234,7 +227,6 @@ const Register = () => {
               onChange={(e) => {
                 const value = e.target.value;
                 setEmail(value);
-                // Validar email solo cuando tenga al menos 3 caracteres o cuando pierda el foco
                 if (value.length >= 3 || value.length === 0) {
                   const error = validateEmail(value);
                   setErrors({ ...errors, email: error });
@@ -263,11 +255,10 @@ const Register = () => {
                 type={showPassword ? "text" : "password"}
                 id="password"
                 value={password}
-                onChange={(e) => {
-                  const value = e.target.value;
-                  setPassword(value);
-                  // Validar contraseña mientras escribe
-                  const error = validatePassword(value);
+              onChange={(e) => {
+                const value = e.target.value;
+                setPassword(value);
+                const error = validatePassword(value);
                   setErrors({ ...errors, password: error });
                 }}
                 onBlur={(e) => {
@@ -313,7 +304,6 @@ const Register = () => {
               onChange={(e) => {
                 const value = e.target.value;
                 setEdad(value);
-                // Validar edad solo cuando tenga un valor o cuando pierda el foco
                 if (value) {
                   const error = validateEdad(value);
                   setErrors({ ...errors, edad: error });

@@ -1,17 +1,5 @@
-import axios from "axios";
-import { API_URL } from "../utils/constants.js";
-
-const api = axios.create({
-  baseURL: API_URL,
-});
-
-api.interceptors.request.use((config) => {
-  const token = localStorage.getItem("token");
-  if (token) {
-    config.headers.Authorization = `Bearer ${token}`;
-  }
-  return config;
-});
+import { api } from "../utils/axiosConfig.js";
+import { normalizeLimit, normalizePage, normalizeRol, normalizeSearch, normalizeEstadoBache } from "../utils/validators.js";
 
 export const adminAPI = {
   getStats: async () => {
@@ -20,7 +8,41 @@ export const adminAPI = {
   },
 
   getAllBaches: async (filters = {}) => {
-    const response = await api.get("/admin/baches", { params: filters });
+    const params = {
+      page: normalizePage(filters.page),
+      limit: normalizeLimit(filters.limit),
+    };
+    const estado = normalizeEstadoBache(filters.estado);
+    if (estado) params.estado = estado;
+    const response = await api.get("/admin/baches", { params });
+    return response.data;
+  },
+
+  getAllUsers: async (filters = {}) => {
+    const params = {
+      page: normalizePage(filters.page),
+      limit: normalizeLimit(filters.limit),
+    };
+    const rol = normalizeRol(filters.rol);
+    if (rol) params.rol = rol;
+    const search = normalizeSearch(filters.search);
+    if (search) params.search = search;
+    const response = await api.get("/admin/usuarios", { params });
+    return response.data;
+  },
+
+  getUserById: async (id) => {
+    const response = await api.get(`/admin/usuarios/${id}`);
+    return response.data;
+  },
+
+  updateUser: async (id, data) => {
+    const response = await api.put(`/admin/usuarios/${id}`, data);
+    return response.data;
+  },
+
+  deleteUser: async (id) => {
+    const response = await api.delete(`/admin/usuarios/${id}`);
     return response.data;
   },
 };

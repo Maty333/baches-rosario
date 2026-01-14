@@ -1,22 +1,13 @@
-import axios from "axios";
-import { API_URL } from "../utils/constants.js";
-
-const api = axios.create({
-  baseURL: API_URL,
-});
-
-// Interceptor para agregar token a todas las peticiones
-api.interceptors.request.use((config) => {
-  const token = localStorage.getItem("token");
-  if (token) {
-    config.headers.Authorization = `Bearer ${token}`;
-  }
-  return config;
-});
+import { api } from "../utils/axiosConfig.js";
+import { normalizeLimit, normalizePage, normalizeEstadoBache } from "../utils/validators.js";
 
 export const bachesAPI = {
   getAll: async (filters = {}) => {
-    const response = await api.get("/baches", { params: filters });
+    const params = { ...filters };
+    if (filters.page != null) params.page = normalizePage(filters.page);
+    if (filters.limit != null) params.limit = normalizeLimit(filters.limit);
+    if (filters.estado != null) params.estado = normalizeEstadoBache(filters.estado);
+    const response = await api.get("/baches", { params });
     return response.data;
   },
 
@@ -32,6 +23,7 @@ export const bachesAPI = {
     formData.append("ubicacion[lat]", data.ubicacion.lat);
     formData.append("ubicacion[lng]", data.ubicacion.lng);
     formData.append("ubicacion[direccion]", data.ubicacion.direccion);
+    formData.append("posicion", data.posicion);
 
     if (images && images.length > 0) {
       images.forEach((image) => {

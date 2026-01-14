@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { useAuth } from "../../context/AuthContext.jsx";
 import { commentsAPI } from "../../api/comments.js";
 import { toast } from "react-toastify";
+import { sanitizeText } from "../../utils/sanitize.js";
 import "../../styles/CommentSection.css";
 
 const CommentSection = ({ bacheId }) => {
@@ -76,7 +77,7 @@ const CommentSection = ({ bacheId }) => {
                   {new Date(comment.fecha).toLocaleDateString("es-AR")}
                 </span>
               </div>
-              <p className="comment-content">{comment.contenido}</p>
+              <p className="comment-content">{sanitizeText(comment.contenido)}</p>
             </div>
           ))
         )}

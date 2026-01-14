@@ -1,11 +1,10 @@
 import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../../context/AuthContext.jsx";
-import { useNotifications } from "../../context/NotificationContext.jsx";
+import NotificationBadge from "./NotificationBadge.jsx";
 import "../../styles/Navbar.css";
 
 const Navbar = () => {
   const { user, isAuthenticated, logout, isAdmin } = useAuth();
-  const { notifications } = useNotifications();
   const navigate = useNavigate();
 
   const handleLogout = () => {
@@ -37,9 +36,16 @@ const Navbar = () => {
               )}
               <div className="navbar-user">
                 <span className="navbar-username">{user?.nombre}</span>
-                {notifications.length > 0 && (
-                  <span className="navbar-notification-badge">{notifications.length}</span>
-                )}
+                <NotificationBadge />
+                <a
+                  href={`${import.meta.env.VITE_API_URL?.replace("/api", "") || "http://localhost:3000"}/api-docs`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="navbar-link"
+                  title="Documentación de la API (Swagger)"
+                >
+                  📚 API Docs
+                </a>
                 <button onClick={handleLogout} className="navbar-logout">
                   Salir
                 </button>

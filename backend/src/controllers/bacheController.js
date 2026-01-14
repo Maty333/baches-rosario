@@ -65,10 +65,13 @@ export const createBache = async (req, res) => {
       return res.status(400).json({ errors: errors.array() });
     }
 
-    const { titulo, descripcion, ubicacion } = req.body;
+    const { titulo, descripcion, ubicacion, posicion } = req.body;
 
-    // Procesar imágenes
     const imagenes = req.files ? req.files.map((file) => `/uploads/${file.filename}`) : [];
+
+    if (imagenes.length < 2) {
+      return res.status(400).json({ message: "Se requieren mínimo 2 imágenes" });
+    }
 
     const bache = new Bache({
       titulo,
@@ -79,6 +82,7 @@ export const createBache = async (req, res) => {
         direccion: ubicacion.direccion,
       },
       imagenes,
+      posicion,
       reportadoPor: req.user.id,
     });
 

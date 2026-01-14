@@ -4,7 +4,8 @@ import { bachesAPI } from "../api/baches.js";
 import { useAuth } from "../context/AuthContext.jsx";
 import { toast } from "react-toastify";
 import CommentSection from "../components/comments/CommentSection.jsx";
-import { ESTADOS_LABELS } from "../utils/constants.js";
+import { ESTADOS_LABELS, API_URL } from "../utils/constants.js";
+import { sanitizeText } from "../utils/sanitize.js";
 import Loading from "../components/common/Loading.jsx";
 import "../styles/BacheDetail.css";
 
@@ -74,12 +75,22 @@ const BacheDetail = () => {
 
       <div className="bache-detail">
         <div className="bache-detail-header">
-          <h1>{bache.titulo}</h1>
+          <h1>{sanitizeText(bache.titulo)}</h1>
           <span className={estadoClass}>{ESTADOS_LABELS[bache.estado]}</span>
         </div>
 
         <div className="bache-detail-info">
-          <p className="bache-detail-location">📍 {bache.ubicacion.direccion}</p>
+          <p className="bache-detail-location">📍 {sanitizeText(bache.ubicacion?.direccion || "")}</p>
+          {bache.posicion && (
+            <p className="bache-detail-position">
+              📍 Posición: {
+                bache.posicion === "medio" ? "Medio de la calle" :
+                bache.posicion === "derecha" ? "Derecha" :
+                bache.posicion === "izquierda" ? "Izquierda" :
+                bache.posicion
+              }
+            </p>
+          )}
           <p className="bache-detail-date">
             Reportado el {new Date(bache.fechaReporte).toLocaleDateString("es-AR")}
           </p>
@@ -90,7 +101,7 @@ const BacheDetail = () => {
           )}
         </div>
 
-        <p className="bache-detail-description">{bache.descripcion}</p>
+        <p className="bache-detail-description">{sanitizeText(bache.descripcion)}</p>
 
         {bache.imagenes && bache.imagenes.length > 0 && (
           <div className="bache-detail-images">

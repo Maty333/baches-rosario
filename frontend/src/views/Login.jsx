@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { useAuth } from "../context/AuthContext.jsx";
-import { toast } from "react-toastify";
+import { useToast } from "../hooks/useToast.js";
 import "../styles/Login.css";
 
 const Login = () => {
@@ -9,20 +9,53 @@ const Login = () => {
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [failedAttempts, setFailedAttempts] = useState(0);
+  const [lockedUntil, setLockedUntil] = useState(null);
   const { login } = useAuth();
   const navigate = useNavigate();
+  const { showSuccess, showError } = useToast();
+
+  const isLocked = lockedUntil && Date.now() < lockedUntil;
+  const lockSecondsLeft = isLocked ? Math.ceil((lockedUntil - Date.now()) / 1000) : 0;
+
+  const validateLoginForm = () => {
+    if (!email.trim()) return "El email es requerido";
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim())) return "El email no es válido";
+    if (!password) return "La contraseña es requerida";
+    return "";
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    if (isLocked) {
+      showError(`Demasiados intentos. Esperá ${lockSecondsLeft}s y volvé a intentar.`);
+      return;
+    }
+
+    const localError = validateLoginForm();
+    if (localError) {
+      showError(localError);
+      return;
+    }
+
     setLoading(true);
 
     const result = await login(email, password);
 
     if (result.success) {
-      toast.success("Sesión iniciada correctamente");
+      showSuccess("Sesión iniciada correctamente");
+      setFailedAttempts(0);
+      setLockedUntil(null);
       navigate("/");
     } else {
-      toast.error(result.message);
+      showError(result.message);
+      setFailedAttempts((prev) => {
+        const next = prev + 1;
+        if (next >= 3) {
+          setLockedUntil(Date.now() + 30_000);
+        }
+        return next;
+      });
     }
 
     setLoading(false);
@@ -74,7 +107,7 @@ const Login = () => {
             </div>
           </div>
           <button type="submit" disabled={loading} className="submit-button">
-            {loading ? "Iniciando sesión..." : "Iniciar Sesión"}
+            {loading ? "Iniciando sesión..." : isLocked ? `Esperá ${lockSecondsLeft}s...` : "Iniciar Sesión"}
           </button>
         </form>
         <p className="register-link">

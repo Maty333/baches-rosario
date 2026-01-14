@@ -27,8 +27,20 @@ export const NotificationProvider = ({ children }) => {
           {
             id: Date.now(),
             type: "success",
-            message: `¡Un bache ha sido solucionado! Tardó ${data.tiempoSolucion} días.`,
-            bacheId: data.id,
+            message: `¡Un bache ha sido solucionado! Tardó ${data.tiempoSolucion || "N/A"} días.`,
+            bacheId: data.id || data._id,
+            timestamp: Date.now(),
+          },
+          ...prev,
+        ]);
+      } else if (data.estado === "en_proceso") {
+        setNotifications((prev) => [
+          {
+            id: Date.now(),
+            type: "info",
+            message: `Un bache está siendo procesado: ${data.titulo || "Bache"}`,
+            bacheId: data.id || data._id,
+            timestamp: Date.now(),
           },
           ...prev,
         ]);
@@ -40,8 +52,9 @@ export const NotificationProvider = ({ children }) => {
         {
           id: Date.now(),
           type: "info",
-          message: `Nuevo bache reportado: ${bache.titulo}`,
-          bacheId: bache._id,
+          message: `Nuevo bache reportado: ${bache.titulo || "Bache"}`,
+          bacheId: bache._id || bache.id,
+          timestamp: Date.now(),
         },
         ...prev,
       ]);

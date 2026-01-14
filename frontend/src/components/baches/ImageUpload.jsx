@@ -1,8 +1,27 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import "../../styles/ImageUpload.css";
 
-const ImageUpload = ({ images, onChange, maxImages = 5 }) => {
+const ImageUpload = ({ images, onChange, maxImages = 5, minImages = 0 }) => {
   const [previews, setPreviews] = useState([]);
+
+  useEffect(() => {
+    const newPreviews = [];
+    images.forEach((file) => {
+      if (file instanceof File) {
+        const reader = new FileReader();
+        reader.onloadend = () => {
+          newPreviews.push({ file, preview: reader.result });
+          if (newPreviews.length === images.length) {
+            setPreviews(newPreviews);
+          }
+        };
+        reader.readAsDataURL(file);
+      }
+    });
+    if (images.length === 0) {
+      setPreviews([]);
+    }
+  }, [images]);
 
   const handleFileChange = (e) => {
     const files = Array.from(e.target.files);
@@ -15,21 +34,12 @@ const ImageUpload = ({ images, onChange, maxImages = 5 }) => {
 
     const newImages = files.slice(0, remainingSlots);
     onChange([...images, ...newImages]);
-
-    // Crear previews
-    newImages.forEach((file) => {
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        setPreviews((prev) => [...prev, { file, preview: reader.result }]);
-      };
-      reader.readAsDataURL(file);
-    });
+    e.target.value = "";
   };
 
   const removeImage = (index) => {
     const newImages = images.filter((_, i) => i !== index);
     onChange(newImages);
-    setPreviews((prev) => prev.filter((_, i) => i !== index));
   };
 
   return (
@@ -45,7 +55,7 @@ const ImageUpload = ({ images, onChange, maxImages = 5 }) => {
         <span className="image-upload-button">
           {images.length >= maxImages
             ? `Máximo ${maxImages} imágenes`
-            : `Subir imágenes (${images.length}/${maxImages})`}
+            : `Subir imágenes (${images.length}/${maxImages}${minImages > 0 ? `, mínimo ${minImages}` : ""})`}
         </span>
       </label>
 

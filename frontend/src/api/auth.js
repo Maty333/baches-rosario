@@ -1,9 +1,4 @@
-import axios from "axios";
-import { API_URL } from "../utils/constants.js";
-
-const api = axios.create({
-  baseURL: API_URL,
-});
+import { api } from "../utils/axiosConfig.js";
 
 export const authAPI = {
   register: async (email, password, nombre, apellido, edad, sexo) => {
@@ -25,6 +20,13 @@ export const authAPI = {
 
   getMe: async (token) => {
     const response = await api.get("/auth/me", {
+      headers: { Authorization: `Bearer ${token}` },
+    });
+    return response.data;
+  },
+
+  updateProfile: async (token, profileData) => {
+    const response = await api.put("/auth/profile", profileData, {
       headers: { Authorization: `Bearer ${token}` },
     });
     return response.data;
