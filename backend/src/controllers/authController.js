@@ -1,5 +1,6 @@
 import jwt from "jsonwebtoken";
 import { validationResult } from "express-validator";
+import { OAuth2Client } from "google-auth-library";
 import User from "../models/User.js";
 
 const generateToken = (userId) => {
@@ -138,5 +139,158 @@ export const updateProfile = async (req, res) => {
     });
   } catch (error) {
     res.status(500).json({ message: error.message });
+  }
+};
+
+// Nueva función para autenticación con Google
+export const googleAuth = async (req, res) => {
+  try {
+    const { code } = req.query;
+
+    if (!code) {
+      return res.status(400).json({ message: "Código de autorización no proporcionado" });
+    }
+
+    // Verificar que las variables de entorno estén configuradas
+    if (!process.env.GOOGLE_CLIENT_ID || !process.env.GOOGLE_CLIENT_SECRET || !process.env.GOOGLE_REDIRECT_URI) {
+      return res.status(500).json({ 
+        message: "Error de configuración del servidor. Variables de Google OAuth no configuradas." 
+      });
+    }
+
+    // Crear cliente OAuth2
+    const client = new OAuth2Client(
+      process.env.GOOGLE_CLIENT_ID,
+      process.env.GOOGLE_CLIENT_SECRET,
+      process.env.GOOGLE_REDIRECT_URI
+    );
+
+    // Intercambiar código por tokens (pasar redirect_uri explícitamente)
+    let tokens;
+    try {
+      const tokenResponse = await client.getToken({
+        code,
+        redirect_uri: process.env.GOOGLE_REDIRECT_URI,
+      });
+      tokens = tokenResponse.tokens;
+    } catch (tokenError) {
+      console.error("Error al intercambiar código por tokens:", tokenError);
+      
+      if (tokenError.message && tokenError.message.includes("invalid_grant")) {
+        return res.status(400).json({ 
+          message: "El código de autorización ha expirado o ya fue usado. Por favor, intenta iniciar sesión nuevamente.",
+          error: "invalid_grant"
+        });
+      }
+      
+      return res.status(400).json({ 
+        message: "Error al intercambiar código de autorización",
+        error: tokenError.message 
+      });
+    }
+
+    client.setCredentials(tokens);
+
+    // Verificar que tengamos id_token
+    if (!tokens.id_token) {
+      return res.status(400).json({ 
+        message: "No se recibió el token de identificación de Google" 
+      });
+    }
+
+    // Obtener información del usuario de Google
+    const ticket = await client.verifyIdToken({
+      idToken: tokens.id_token,
+      audience: process.env.GOOGLE_CLIENT_ID,
+    });
+
+    const payload = ticket.getPayload();
+    const { sub: googleId, email, given_name, family_name, picture } = payload;
+
+    // Validar que tengamos email
+    if (!email) {
+      return res.status(400).json({ 
+        message: "No se pudo obtener el email de Google" 
+      });
+    }
+
+    // Buscar si el usuario ya existe por email o googleId
+    let user = await User.findOne({
+      $or: [{ email }, { googleId }],
+    });
+
+    if (user) {
+      // Usuario existe, actualizar googleId si no lo tenía
+      if (!user.googleId) {
+        user.googleId = googleId;
+        user.metodoRegistro = "google";
+        if (picture) user.fotoPerfil = picture;
+        await user.save();
+      }
+    } else {
+      // Crear nuevo usuario
+      // Dividir nombre completo si no hay apellido
+      const nombre = given_name || email.split("@")[0];
+      const apellido = family_name || "Usuario";
+
+      user = new User({
+        email,
+        googleId,
+        nombre,
+        apellido,
+        metodoRegistro: "google",
+        fotoPerfil: picture,
+        // No requerimos edad ni sexo para usuarios de Google
+        // Pueden completarlos después si quieren
+      });
+
+      await user.save();
+    }
+
+    // Generar JWT
+    const token = generateToken(user._id);
+
+    res.json({
+      token,
+      user: {
+        id: user._id,
+        email: user.email,
+        nombre: user.nombre,
+        apellido: user.apellido,
+        rol: user.rol,
+        fotoPerfil: user.fotoPerfil,
+        metodoRegistro: user.metodoRegistro,
+      },
+    });
+  } catch (error) {
+    console.error("Error en autenticación con Google:", error);
+    res.status(500).json({ 
+      message: "Error al autenticar con Google", 
+      error: error.message 
+    });
+  }
+};
+
+// Función para obtener la URL de Google OAuth (para el frontend)
+export const getGoogleAuthUrl = (req, res) => {
+  try {
+    const client = new OAuth2Client(
+      process.env.GOOGLE_CLIENT_ID,
+      process.env.GOOGLE_CLIENT_SECRET,
+      process.env.GOOGLE_REDIRECT_URI
+    );
+
+    const authUrl = client.generateAuthUrl({
+      access_type: "offline",
+      scope: [
+        "https://www.googleapis.com/auth/userinfo.email",
+        "https://www.googleapis.com/auth/userinfo.profile",
+      ],
+      prompt: "consent", // Fuerza mostrar pantalla de consentimiento
+    });
+
+    res.json({ authUrl });
+  } catch (error) {
+    res.status(500).json({ message: "Error al generar URL de Google", error: error.message });
   }
 };

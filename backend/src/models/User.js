@@ -12,7 +12,7 @@ const userSchema = new mongoose.Schema(
     },
     password: {
       type: String,
-      required: true,
+      // Ya no es required, porque usuarios de Google no tienen password
       minlength: 6,
     },
     nombre: {
@@ -29,19 +29,35 @@ const userSchema = new mongoose.Schema(
     },
     edad: {
       type: Number,
-      required: true,
+      // Ya no es required para usuarios de Google
       min: 13,
       max: 120,
     },
     sexo: {
       type: String,
-      required: true,
+      // Ya no es required para usuarios de Google
       enum: ["masculino", "femenino", "otro", "prefiero no decir"],
     },
     rol: {
       type: String,
       enum: ["usuario", "admin"],
       default: "usuario",
+    },
+    // Nuevo campo para identificar usuarios de Google
+    googleId: {
+      type: String,
+      unique: true,
+      sparse: true, // Permite múltiples nulls
+    },
+    // Nuevo campo para foto de perfil de Google
+    fotoPerfil: {
+      type: String,
+    },
+    // Campo para saber cómo se registró
+    metodoRegistro: {
+      type: String,
+      enum: ["email", "google"],
+      default: "email",
     },
     fechaRegistro: {
       type: Date,
@@ -53,9 +69,9 @@ const userSchema = new mongoose.Schema(
   }
 );
 
-// Hash password antes de guardar
+// Hash password solo si existe y fue modificado
 userSchema.pre("save", async function (next) {
-  if (!this.isModified("password")) {
+  if (!this.isModified("password") || !this.password) {
     return next();
   }
   const salt = await bcrypt.genSalt(10);
@@ -63,8 +79,11 @@ userSchema.pre("save", async function (next) {
   next();
 });
 
-// Método para comparar passwords
+// Método para comparar passwords (solo si tiene password)
 userSchema.methods.comparePassword = async function (candidatePassword) {
+  if (!this.password) {
+    return false; // Usuario de Google no tiene password
+  }
   return await bcrypt.compare(candidatePassword, this.password);
 };
 

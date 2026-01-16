@@ -1,7 +1,7 @@
 import express from "express";
 import { body } from "express-validator";
 import rateLimit from "express-rate-limit";
-import { register, login, getMe, updateProfile } from "../controllers/authController.js";
+import { register, login, getMe, updateProfile, googleAuth, getGoogleAuthUrl } from "../controllers/authController.js";
 import { authenticate } from "../middleware/auth.js";
 
 const router = express.Router();
@@ -320,6 +320,80 @@ router.get("/me", authenticate, getMe);
  *         description: Usuario no encontrado
  */
 router.put("/profile", authenticate, updateProfileValidation, updateProfile);
+
+/**
+ * @swagger
+ * /api/auth/google/url:
+ *   get:
+ *     summary: Obtener URL de autenticación de Google
+ *     tags: [Autenticación]
+ *     description: Retorna la URL a la que el frontend debe redirigir al usuario para autenticarse con Google
+ *     responses:
+ *       200:
+ *         description: URL de autenticación generada exitosamente
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 authUrl:
+ *                   type: string
+ *                   example: https://accounts.google.com/o/oauth2/v2/auth?...
+ *       500:
+ *         description: Error al generar URL de Google
+ */
+router.get("/google/url", getGoogleAuthUrl);
+
+/**
+ * @swagger
+ * /api/auth/google/callback:
+ *   get:
+ *     summary: Callback de autenticación con Google
+ *     tags: [Autenticación]
+ *     description: Endpoint al que Google redirige después de la autenticación. Intercambia el código por tokens y crea/actualiza el usuario.
+ *     parameters:
+ *       - in: query
+ *         name: code
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: Código de autorización proporcionado por Google
+ *     responses:
+ *       200:
+ *         description: Autenticación exitosa
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 token:
+ *                   type: string
+ *                   example: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
+ *                 user:
+ *                   type: object
+ *                   properties:
+ *                     id:
+ *                       type: string
+ *                     email:
+ *                       type: string
+ *                     nombre:
+ *                       type: string
+ *                     apellido:
+ *                       type: string
+ *                     rol:
+ *                       type: string
+ *                       enum: [usuario, admin]
+ *                     fotoPerfil:
+ *                       type: string
+ *                     metodoRegistro:
+ *                       type: string
+ *                       enum: [email, google]
+ *       400:
+ *         description: Código de autorización no proporcionado
+ *       500:
+ *         description: Error al autenticar con Google
+ */
+router.get("/google/callback", googleAuth);
 
 export default router;
 
