@@ -2,13 +2,13 @@ import { api } from "../utils/axiosConfig.js";
 
 export const authAPI = {
   register: async (email, password, nombre, apellido, edad, sexo) => {
-    const response = await api.post("/auth/register", { 
-      email, 
-      password, 
-      nombre, 
-      apellido, 
-      edad, 
-      sexo 
+    const response = await api.post("/auth/register", {
+      email,
+      password,
+      nombre,
+      apellido,
+      edad,
+      sexo,
     });
     return response.data;
   },
@@ -31,5 +31,14 @@ export const authAPI = {
     });
     return response.data;
   },
-};
 
+  getGoogleAuthUrl: async () => {
+    const response = await api.get("/auth/google/url");
+    return response.data;
+  },
+
+  googleCallback: async (code) => {
+    const response = await api.get(`/auth/google/callback?code=${code}`);
+    return response.data;
+  },
+};

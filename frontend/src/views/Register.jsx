@@ -2,6 +2,7 @@ import { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { useAuth } from "../context/AuthContext.jsx";
 import { useToast } from "../hooks/useToast.js";
+import GoogleIcon from "../components/common/GoogleIcon.jsx";
 import "../styles/Register.css";
 
 const Register = () => {
@@ -14,9 +15,16 @@ const Register = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [errors, setErrors] = useState({});
   const [loading, setLoading] = useState(false);
-  const { register } = useAuth();
+  const { register, loginWithGoogle } = useAuth();
   const navigate = useNavigate();
   const { showSuccess, showError } = useToast();
+
+  const handleGoogleLogin = async () => {
+    const result = await loginWithGoogle();
+    if (!result?.success && result?.message) {
+      showError(result.message);
+    }
+  };
 
   const validateNombre = (value) => {
     if (!value.trim()) {
@@ -75,7 +83,9 @@ const Register = () => {
   const validateSexo = (value) => {
     if (!value) {
       return "El sexo es requerido";
-    } else if (!["masculino", "femenino", "otro", "prefiero no decir"].includes(value)) {
+    } else if (
+      !["masculino", "femenino", "otro", "prefiero no decir"].includes(value)
+    ) {
       return "Selecciona una opción válida";
     }
     return "";
@@ -111,7 +121,7 @@ const Register = () => {
       sexo: validateSexo(sexo),
     };
 
-    Object.keys(newErrors).forEach(key => {
+    Object.keys(newErrors).forEach((key) => {
       if (!newErrors[key]) delete newErrors[key];
     });
 
@@ -121,9 +131,9 @@ const Register = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    
+
     if (!validateForm()) {
-      const errorMessages = Object.values(errors).filter(msg => msg);
+      const errorMessages = Object.values(errors).filter((msg) => msg);
       if (errorMessages.length > 0) {
         showError(`Errores en el formulario: ${errorMessages.join(", ")}`);
       } else {
@@ -134,7 +144,14 @@ const Register = () => {
 
     setLoading(true);
 
-    const result = await register(email, password, nombre, apellido, parseInt(edad), sexo);
+    const result = await register(
+      email,
+      password,
+      nombre,
+      apellido,
+      parseInt(edad),
+      sexo
+    );
 
     if (result.success) {
       showSuccess("Registro exitoso");
@@ -142,19 +159,21 @@ const Register = () => {
     } else {
       if (result.errors && Array.isArray(result.errors)) {
         const backendErrors = {};
-        result.errors.forEach(err => {
+        result.errors.forEach((err) => {
           const field = err.param || err.path;
           if (field) {
             backendErrors[field] = err.msg;
           }
         });
-        setErrors(prevErrors => ({ ...prevErrors, ...backendErrors }));
+        setErrors((prevErrors) => ({ ...prevErrors, ...backendErrors }));
       }
-      
+
       if (result.message) {
         showError(result.message, { autoClose: 5000 });
       } else {
-        showError("Error al registrarse. Por favor, verifica los datos ingresados.");
+        showError(
+          "Error al registrarse. Por favor, verifica los datos ingresados."
+        );
       }
     }
 
@@ -183,14 +202,16 @@ const Register = () => {
                 setErrors({ ...errors, nombre: error });
               }}
               className={
-                errors.nombre 
-                  ? "error" 
-                  : isFieldValid("nombre", nombre) 
-                    ? "valid" 
-                    : ""
+                errors.nombre
+                  ? "error"
+                  : isFieldValid("nombre", nombre)
+                  ? "valid"
+                  : ""
               }
             />
-            {errors.nombre && <span className="error-message">{errors.nombre}</span>}
+            {errors.nombre && (
+              <span className="error-message">{errors.nombre}</span>
+            )}
           </div>
           <div className="form-group">
             <label htmlFor="apellido">Apellido *</label>
@@ -209,14 +230,16 @@ const Register = () => {
                 setErrors({ ...errors, apellido: error });
               }}
               className={
-                errors.apellido 
-                  ? "error" 
-                  : isFieldValid("apellido", apellido) 
-                    ? "valid" 
-                    : ""
+                errors.apellido
+                  ? "error"
+                  : isFieldValid("apellido", apellido)
+                  ? "valid"
+                  : ""
               }
             />
-            {errors.apellido && <span className="error-message">{errors.apellido}</span>}
+            {errors.apellido && (
+              <span className="error-message">{errors.apellido}</span>
+            )}
           </div>
           <div className="form-group">
             <label htmlFor="email">Email *</label>
@@ -239,14 +262,16 @@ const Register = () => {
                 setErrors({ ...errors, email: error });
               }}
               className={
-                errors.email 
-                  ? "error" 
-                  : isFieldValid("email", email) 
-                    ? "valid" 
-                    : ""
+                errors.email
+                  ? "error"
+                  : isFieldValid("email", email)
+                  ? "valid"
+                  : ""
               }
             />
-            {errors.email && <span className="error-message">{errors.email}</span>}
+            {errors.email && (
+              <span className="error-message">{errors.email}</span>
+            )}
           </div>
           <div className="form-group">
             <label htmlFor="password">Contraseña *</label>
@@ -255,10 +280,10 @@ const Register = () => {
                 type={showPassword ? "text" : "password"}
                 id="password"
                 value={password}
-              onChange={(e) => {
-                const value = e.target.value;
-                setPassword(value);
-                const error = validatePassword(value);
+                onChange={(e) => {
+                  const value = e.target.value;
+                  setPassword(value);
+                  const error = validatePassword(value);
                   setErrors({ ...errors, password: error });
                 }}
                 onBlur={(e) => {
@@ -266,34 +291,54 @@ const Register = () => {
                   setErrors({ ...errors, password: error });
                 }}
                 className={
-                  errors.password 
-                    ? "error" 
-                    : isFieldValid("password", password) 
-                      ? "valid" 
-                      : ""
+                  errors.password
+                    ? "error"
+                    : isFieldValid("password", password)
+                    ? "valid"
+                    : ""
                 }
               />
               <button
                 type="button"
                 className="password-toggle"
                 onClick={() => setShowPassword(!showPassword)}
-                aria-label={showPassword ? "Ocultar contraseña" : "Mostrar contraseña"}
+                aria-label={
+                  showPassword ? "Ocultar contraseña" : "Mostrar contraseña"
+                }
               >
                 {showPassword ? (
-                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                  <svg
+                    width="20"
+                    height="20"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                  >
                     <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"></path>
                     <line x1="1" y1="1" x2="23" y2="23"></line>
                   </svg>
                 ) : (
-                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                  <svg
+                    width="20"
+                    height="20"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                  >
                     <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
                     <circle cx="12" cy="12" r="3"></circle>
                   </svg>
                 )}
               </button>
             </div>
-            <small className="form-hint">Mínimo 6 caracteres, debe incluir mayúscula, minúscula y número</small>
-            {errors.password && <span className="error-message">{errors.password}</span>}
+            <small className="form-hint">
+              Mínimo 6 caracteres, debe incluir mayúscula, minúscula y número
+            </small>
+            {errors.password && (
+              <span className="error-message">{errors.password}</span>
+            )}
           </div>
           <div className="form-group">
             <label htmlFor="edad">Edad *</label>
@@ -318,14 +363,16 @@ const Register = () => {
               min="13"
               max="120"
               className={
-                errors.edad 
-                  ? "error" 
-                  : isFieldValid("edad", edad) 
-                    ? "valid" 
-                    : ""
+                errors.edad
+                  ? "error"
+                  : isFieldValid("edad", edad)
+                  ? "valid"
+                  : ""
               }
             />
-            {errors.edad && <span className="error-message">{errors.edad}</span>}
+            {errors.edad && (
+              <span className="error-message">{errors.edad}</span>
+            )}
           </div>
           <div className="form-group">
             <label htmlFor="sexo">Sexo *</label>
@@ -343,11 +390,11 @@ const Register = () => {
                 setErrors({ ...errors, sexo: error });
               }}
               className={
-                errors.sexo 
-                  ? "error" 
-                  : isFieldValid("sexo", sexo) 
-                    ? "valid" 
-                    : ""
+                errors.sexo
+                  ? "error"
+                  : isFieldValid("sexo", sexo)
+                  ? "valid"
+                  : ""
               }
             >
               <option value="">Selecciona una opción</option>
@@ -356,12 +403,29 @@ const Register = () => {
               <option value="otro">Otro</option>
               <option value="prefiero no decir">Prefiero no decir</option>
             </select>
-            {errors.sexo && <span className="error-message">{errors.sexo}</span>}
+            {errors.sexo && (
+              <span className="error-message">{errors.sexo}</span>
+            )}
           </div>
           <button type="submit" disabled={loading} className="submit-button">
             {loading ? "Registrando..." : "Registrarse"}
           </button>
         </form>
+
+        <div className="divider">
+          <span>o</span>
+        </div>
+
+        <button
+          type="button"
+          onClick={handleGoogleLogin}
+          disabled={loading}
+          className="google-button"
+        >
+          <GoogleIcon />
+          Continuar con Google
+        </button>
+
         <p className="login-link">
           ¿Ya tienes cuenta? <Link to="/login">Inicia sesión aquí</Link>
         </p>
@@ -371,4 +435,3 @@ const Register = () => {
 };
 
 export default Register;
-

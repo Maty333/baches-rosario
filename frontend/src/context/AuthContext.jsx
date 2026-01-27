@@ -70,7 +70,14 @@ export const AuthProvider = ({ children }) => {
 
   const register = async (email, password, nombre, apellido, edad, sexo) => {
     try {
-      const data = await authAPI.register(email, password, nombre, apellido, edad, sexo);
+      const data = await authAPI.register(
+        email,
+        password,
+        nombre,
+        apellido,
+        edad,
+        sexo
+      );
       localStorage.setItem("token", data.token);
       setUser(data.user);
       return { success: true };
@@ -89,9 +96,10 @@ export const AuthProvider = ({ children }) => {
           ...mapValidationErrors(error.response.data.errors),
         };
       }
-      const errorMessage = error.response?.data?.message || 
-                          error.message || 
-                          "Error al registrarse. Por favor, verifica los datos ingresados.";
+      const errorMessage =
+        error.response?.data?.message ||
+        error.message ||
+        "Error al registrarse. Por favor, verifica los datos ingresados.";
       return {
         success: false,
         message: errorMessage,
@@ -110,14 +118,51 @@ export const AuthProvider = ({ children }) => {
       const refreshedUser = await authAPI.getMe(token);
       setUser(refreshedUser);
 
-      return { success: true, message: data.message || "Perfil actualizado", user: refreshedUser };
+      return {
+        success: true,
+        message: data.message || "Perfil actualizado",
+        user: refreshedUser,
+      };
     } catch (error) {
       if (error.response?.data?.errors) {
-        return { success: false, ...mapValidationErrors(error.response.data.errors) };
+        return {
+          success: false,
+          ...mapValidationErrors(error.response.data.errors),
+        };
       }
       return {
         success: false,
-        message: error.response?.data?.message || "Error al actualizar el perfil",
+        message:
+          error.response?.data?.message || "Error al actualizar el perfil",
+      };
+    }
+  };
+
+  const loginWithGoogle = async () => {
+    try {
+      const { authUrl } = await authAPI.getGoogleAuthUrl();
+      window.location.href = authUrl;
+    } catch (error) {
+      return {
+        success: false,
+        message:
+          error.response?.data?.message ||
+          "Error al iniciar autenticación con Google",
+      };
+    }
+  };
+
+  const handleGoogleCallback = async (code) => {
+    try {
+      const data = await authAPI.googleCallback(code);
+      localStorage.setItem("token", data.token);
+      setUser(data.user);
+      return { success: true };
+    } catch (error) {
+      return {
+        success: false,
+        message:
+          error.response?.data?.message || "Error al autenticar con Google",
       };
     }
   };
@@ -132,6 +177,8 @@ export const AuthProvider = ({ children }) => {
     loading,
     login,
     register,
+    loginWithGoogle,
+    handleGoogleCallback,
     updateProfile,
     logout,
     isAuthenticated: !!user,
@@ -140,4 +187,3 @@ export const AuthProvider = ({ children }) => {
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 };
-

@@ -1,4 +1,9 @@
-import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-dom";
+import {
+  BrowserRouter as Router,
+  Routes,
+  Route,
+  Navigate,
+} from "react-router-dom";
 import { useAuth } from "./context/AuthContext.jsx";
 import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
@@ -12,6 +17,7 @@ import Register from "./views/Register.jsx";
 import BacheDetail from "./views/BacheDetail.jsx";
 import ReportBache from "./views/ReportBache.jsx";
 import AdminPanel from "./views/AdminPanel.jsx";
+import GoogleCallback from "./views/GoogleCallback.jsx";
 
 function PrivateRoute({ children }) {
   const { isAuthenticated, loading } = useAuth();
@@ -51,6 +57,7 @@ function App() {
           <Route path="/" element={<Home />} />
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
+          <Route path="/auth/google/callback" element={<GoogleCallback />} />
           <Route path="/bache/:id" element={<BacheDetail />} />
           <Route
             path="/reportar"
@@ -88,4 +95,3 @@ function App() {
 }
 
 export default App;
-

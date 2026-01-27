@@ -1,15 +1,25 @@
 import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../../context/AuthContext.jsx";
+import { useToast } from "../../hooks/useToast.js";
 import NotificationBadge from "./NotificationBadge.jsx";
+import GoogleIcon from "./GoogleIcon.jsx";
 import "../../styles/Navbar.css";
 
 const Navbar = () => {
-  const { user, isAuthenticated, logout, isAdmin } = useAuth();
+  const { user, isAuthenticated, logout, isAdmin, loginWithGoogle } = useAuth();
   const navigate = useNavigate();
+  const { showError } = useToast();
 
   const handleLogout = () => {
     logout();
     navigate("/");
+  };
+
+  const handleGoogleLogin = async () => {
+    const result = await loginWithGoogle();
+    if (!result?.success && result?.message) {
+      showError(result.message);
+    }
   };
 
   return (
@@ -53,6 +63,14 @@ const Navbar = () => {
             </>
           ) : (
             <>
+              <button
+                onClick={handleGoogleLogin}
+                className="navbar-google-button"
+                title="Iniciar sesión con Google"
+              >
+                <GoogleIcon width={18} height={18} />
+                <span>Iniciar con Google</span>
+              </button>
               <Link to="/login" className="navbar-link">
                 Iniciar Sesión
               </Link>
