@@ -19,6 +19,7 @@ export const authenticate = async (req, res, next) => {
     req.user = user;
     next();
   } catch (error) {
+    // No revelar si falló firma, expiración o usuario inexistente
     res.status(401).json({ message: "Token no válido" });
   }
 };

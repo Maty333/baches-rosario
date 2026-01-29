@@ -48,6 +48,15 @@ const createBacheValidation = [
     .withMessage("La posición debe ser: medio, derecha o izquierda"),
 ];
 
+// Validación para actualizar estado (admin)
+const updateEstadoValidation = [
+  body("estado")
+    .notEmpty()
+    .withMessage("El estado es requerido")
+    .isIn(["reportado", "en_proceso", "solucionado"])
+    .withMessage("Estado debe ser: reportado, en_proceso o solucionado"),
+];
+
 // Validación de query parameters
 const getBachesQueryValidation = [
   query("estado")
@@ -280,7 +289,7 @@ router.put("/:id", validateObjectId("id"), authenticate, upload.array("imagenes"
  *       404:
  *         description: Bache no encontrado
  */
-router.patch("/:id/estado", validateObjectId("id"), authenticate, isAdmin, updateEstado);
+router.patch("/:id/estado", validateObjectId("id"), authenticate, isAdmin, updateEstadoValidation, handleValidationErrors, updateEstado);
 
 /**
  * @swagger

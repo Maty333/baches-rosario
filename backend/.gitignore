@@ -4,3 +4,8 @@ uploads/
 *.log
 .DS_Store
 
+# Pruebas de seguridad (solo locales)
+TEST_SECURITY.md
+src/scripts/test-security.js
+src/scripts/test-security-powershell.ps1
+

@@ -7,7 +7,7 @@ export const validateObjectId = (paramName = "id") => {
   return (req, res, next) => {
     const id = req.params[paramName];
 
-    if (!id) {
+    if (!id || typeof id !== "string" || id.trim() === "") {
       return res.status(400).json({ message: `${paramName} es requerido` });
     }
 

@@ -462,7 +462,7 @@ router.get("/usuarios/:id", validateObjectId("id"), getUserById);
  *       403:
  *         description: Se requiere rol de administrador
  */
-router.put("/usuarios/:id", validateObjectId("id"), updateUserValidation, updateUser);
+router.put("/usuarios/:id", validateObjectId("id"), updateUserValidation, handleValidationErrors, updateUser);
 
 /**
  * @swagger

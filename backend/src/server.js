@@ -78,16 +78,6 @@ const generalLimiter = rateLimit({
   legacyHeaders: false,
 });
 
-// Rate Limiting para autenticación (más estricto)
-const authLimiter = rateLimit({
-  windowMs: 15 * 60 * 1000, // 15 minutos
-  max: 5, // máximo 5 intentos de login/registro por IP en 15 minutos
-  message: "Demasiados intentos de autenticación, intenta de nuevo más tarde.",
-  standardHeaders: true,
-  legacyHeaders: false,
-  skipSuccessfulRequests: true, // No contar peticiones exitosas
-});
-
 // Middlewares
 app.use(express.json({ limit: "10mb" })); // Límite de tamaño del body
 app.use(express.urlencoded({ extended: true, limit: "10mb" }));
@@ -130,10 +120,13 @@ app.get("/api/health", (req, res) => {
   res.json({ message: "API funcionando correctamente" });
 });
 
-// Manejo de errores
+// Manejo de errores (no exponer detalles internos en producción)
 app.use((err, req, res, next) => {
   console.error(err.stack);
-  res.status(500).json({ message: err.message || "Error interno del servidor" });
+  const message = process.env.NODE_ENV === "production"
+    ? "Error interno del servidor"
+    : (err.message || "Error interno del servidor");
+  res.status(500).json({ message });
 });
 
 const PORT = process.env.PORT || 3001;
