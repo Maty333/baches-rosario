@@ -5,9 +5,21 @@ import Comment from "../models/Comment.js";
 export const getStats = async (req, res) => {
   try {
     const totalBaches = await Bache.countDocuments();
-    const bachesReportados = await Bache.countDocuments({ estado: "reportado" });
-    const bachesEnProceso = await Bache.countDocuments({ estado: "en_proceso" });
-    const bachesSolucionados = await Bache.countDocuments({ estado: "solucionado" });
+    const bachesPendientesModeracion = await Bache.countDocuments({
+      estadoModeracion: "pendiente",
+    });
+    const bachesReportados = await Bache.countDocuments({
+      estado: "reportado",
+      $or: [{ estadoModeracion: "aprobado" }, { estadoModeracion: { $exists: false } }],
+    });
+    const bachesEnProceso = await Bache.countDocuments({
+      estado: "en_proceso",
+      $or: [{ estadoModeracion: "aprobado" }, { estadoModeracion: { $exists: false } }],
+    });
+    const bachesSolucionados = await Bache.countDocuments({
+      estado: "solucionado",
+      $or: [{ estadoModeracion: "aprobado" }, { estadoModeracion: { $exists: false } }],
+    });
 
     const tiempoPromedioSolucion = await Bache.aggregate([
       { $match: { estado: "solucionado", tiempoSolucion: { $exists: true } } },
@@ -25,6 +37,7 @@ export const getStats = async (req, res) => {
     res.json({
       baches: {
         total: totalBaches,
+        pendientesModeracion: bachesPendientesModeracion,
         reportados: bachesReportados,
         enProceso: bachesEnProceso,
         solucionados: bachesSolucionados,
@@ -45,11 +58,15 @@ export const getStats = async (req, res) => {
 
 export const getAllBaches = async (req, res) => {
   try {
-    const { estado, fechaDesde, fechaHasta, page = 1, limit = 20 } = req.query;
+    const { estado, estadoModeracion, fechaDesde, fechaHasta, page = 1, limit = 20 } = req.query;
     let query = {};
 
     if (estado) {
       query.estado = estado;
+    }
+
+    if (estadoModeracion) {
+      query.estadoModeracion = estadoModeracion;
     }
 
     if (fechaDesde || fechaHasta) {
@@ -78,6 +95,75 @@ export const getAllBaches = async (req, res) => {
       },
     });
   } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
+export const aprobarBache = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const bache = await Bache.findById(id);
+
+    if (!bache) {
+      return res.status(404).json({ message: "Bache no encontrado" });
+    }
+
+    if (bache.estadoModeracion !== "pendiente") {
+      return res.status(400).json({
+        message: "El bache ya fue revisado (aprobado o rechazado)",
+      });
+    }
+
+    bache.estadoModeracion = "aprobado";
+    bache.motivoRechazo = undefined;
+    await bache.save();
+    await bache.populate("reportadoPor", "nombre email");
+
+    if (req.io) {
+      req.io.emit("nuevoBache", bache);
+    }
+
+    res.json({
+      message: "Bache aprobado. Ya es visible para todos.",
+      bache,
+    });
+  } catch (error) {
+    if (error.name === "CastError" || error.message?.includes("Cast to ObjectId")) {
+      return res.status(400).json({ message: "ID de bache inválido" });
+    }
+    res.status(500).json({ message: error.message });
+  }
+};
+
+export const rechazarBache = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { motivoRechazo } = req.body || {};
+    const bache = await Bache.findById(id);
+
+    if (!bache) {
+      return res.status(404).json({ message: "Bache no encontrado" });
+    }
+
+    if (bache.estadoModeracion !== "pendiente") {
+      return res.status(400).json({
+        message: "El bache ya fue revisado (aprobado o rechazado)",
+      });
+    }
+
+    bache.estadoModeracion = "rechazado";
+    bache.motivoRechazo = motivoRechazo ? String(motivoRechazo).trim() : undefined;
+    await bache.save();
+    await bache.populate("reportadoPor", "nombre email");
+
+    res.json({
+      message: "Bache rechazado.",
+      bache,
+    });
+  } catch (error) {
+    if (error.name === "CastError" || error.message?.includes("Cast to ObjectId")) {
+      return res.status(400).json({ message: "ID de bache inválido" });
+    }
     res.status(500).json({ message: error.message });
   }
 };

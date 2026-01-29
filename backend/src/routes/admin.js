@@ -1,6 +1,15 @@
 import express from "express";
 import { body, query } from "express-validator";
-import { getStats, getAllBaches, getAllUsers, getUserById, updateUser, deleteUser } from "../controllers/adminController.js";
+import {
+  getStats,
+  getAllBaches,
+  getAllUsers,
+  getUserById,
+  updateUser,
+  deleteUser,
+  aprobarBache,
+  rechazarBache,
+} from "../controllers/adminController.js";
 import { authenticate } from "../middleware/auth.js";
 import { isAdmin } from "../middleware/auth.js";
 import { validateObjectId } from "../middleware/validateObjectId.js";
@@ -161,6 +170,10 @@ const getAllBachesQueryValidation = [
     .optional()
     .isIn(["reportado", "en_proceso", "solucionado"])
     .withMessage("Estado inválido"),
+  query("estadoModeracion")
+    .optional()
+    .isIn(["pendiente", "aprobado", "rechazado"])
+    .withMessage("estadoModeracion inválido"),
   query("fechaDesde")
     .optional()
     .isISO8601()
@@ -180,6 +193,10 @@ const getAllBachesQueryValidation = [
 ];
 
 router.get("/baches", getAllBachesQueryValidation, handleValidationErrors, getAllBaches);
+
+router.post("/baches/:id/aprobar", validateObjectId("id"), aprobarBache);
+
+router.post("/baches/:id/rechazar", validateObjectId("id"), rechazarBache);
 
 /**
  * @swagger

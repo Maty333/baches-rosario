@@ -15,6 +15,10 @@ const AdminPanel = () => {
 
   const [activeTab, setActiveTab] = useState("dashboard");
 
+  const [bachesPendientes, setBachesPendientes] = useState([]);
+  const [pendientesLoading, setPendientesLoading] = useState(false);
+  const [accionandoId, setAccionandoId] = useState(null);
+
   const [users, setUsers] = useState([]);
   const [usersPagination, setUsersPagination] = useState(null);
   const [usersLoading, setUsersLoading] = useState(false);
@@ -55,6 +59,51 @@ const AdminPanel = () => {
       toast.error("Error cargando baches");
     } finally {
       setLoading(false);
+    }
+  };
+
+  const loadPendientes = async () => {
+    try {
+      setPendientesLoading(true);
+      const data = await adminAPI.getAllBaches({
+        estadoModeracion: "pendiente",
+        limit: 50,
+      });
+      setBachesPendientes(data.baches || []);
+    } catch (error) {
+      toast.error("Error cargando solicitudes pendientes");
+    } finally {
+      setPendientesLoading(false);
+    }
+  };
+
+  const handleAprobarBache = async (id) => {
+    try {
+      setAccionandoId(id);
+      const res = await adminAPI.aprobarBache(id);
+      toast.success(res.message || "Bache aprobado");
+      await loadPendientes();
+      await loadStats();
+    } catch (error) {
+      toast.error(error.response?.data?.message || "Error al aprobar");
+    } finally {
+      setAccionandoId(null);
+    }
+  };
+
+  const handleRechazarBache = async (id) => {
+    const motivo = window.prompt("Motivo del rechazo (opcional):");
+    if (motivo === null) return;
+    try {
+      setAccionandoId(id);
+      const res = await adminAPI.rechazarBache(id, motivo || undefined);
+      toast.success(res.message || "Bache rechazado");
+      await loadPendientes();
+      await loadStats();
+    } catch (error) {
+      toast.error(error.response?.data?.message || "Error al rechazar");
+    } finally {
+      setAccionandoId(null);
     }
   };
 
@@ -177,6 +226,10 @@ const AdminPanel = () => {
   }, [activeTab, filters]);
 
   useEffect(() => {
+    if (activeTab === "por-validar") loadPendientes();
+  }, [activeTab]);
+
+  useEffect(() => {
     if (activeTab === "usuarios") loadUsers();
   }, [activeTab, userFilters]);
 
@@ -214,6 +267,15 @@ const AdminPanel = () => {
         >
           Dashboard
         </button>
+        <button
+          className={activeTab === "por-validar" ? "tab active" : "tab"}
+          onClick={() => setActiveTab("por-validar")}
+        >
+          Por validar
+          {stats?.baches?.pendientesModeracion > 0 && (
+            <span className="tab-badge">{stats.baches.pendientesModeracion}</span>
+          )}
+        </button>
         <button className={activeTab === "baches" ? "tab active" : "tab"} onClick={() => setActiveTab("baches")}>
           Baches
         </button>
@@ -233,6 +295,10 @@ const AdminPanel = () => {
                 <div className="stat-card">
                   <h3>Total Baches</h3>
                   <p className="stat-number">{stats.baches?.total ?? 0}</p>
+                </div>
+                <div className="stat-card stat-card-pendientes">
+                  <h3>Pendientes de validación</h3>
+                  <p className="stat-number">{stats.baches?.pendientesModeracion ?? 0}</p>
                 </div>
                 <div className="stat-card">
                   <h3>Total Usuarios</h3>
@@ -270,6 +336,80 @@ const AdminPanel = () => {
                 </div>
               )}
             </>
+          )}
+        </div>
+      )}
+
+      {activeTab === "por-validar" && (
+        <div className="admin-por-validar admin-section">
+          <h2>Validar reportes (imágenes y contenido)</h2>
+          <p className="admin-por-validar-desc">
+            Revisá las imágenes y el contenido antes de aprobar. Solo los baches aprobados serán visibles para todos.
+          </p>
+          {pendientesLoading ? (
+            <Loading />
+          ) : bachesPendientes.length === 0 ? (
+            <p className="empty-state">No hay solicitudes pendientes de validación.</p>
+          ) : (
+            <div className="admin-pendientes-list">
+              {bachesPendientes.map((bache) => {
+                const baseUrl = (import.meta.env.VITE_API_URL || "http://localhost:3000/api").replace("/api", "");
+                return (
+                  <div key={bache._id} className="admin-pendiente-card">
+                    <div className="admin-pendiente-imagenes">
+                      {(bache.imagenes || []).map((img, i) => (
+                        <a
+                          key={i}
+                          href={`${baseUrl}${img}`}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="admin-pendiente-img-link"
+                        >
+                          <img
+                            src={`${baseUrl}${img}`}
+                            alt={`Imagen ${i + 1}`}
+                            className="admin-pendiente-img"
+                          />
+                        </a>
+                      ))}
+                    </div>
+                    <div className="admin-pendiente-info">
+                      <h3>{bache.titulo || "Sin título"}</h3>
+                      <p>{bache.descripcion}</p>
+                      <p className="admin-pendiente-direccion">
+                        📍 {bache.ubicacion?.direccion || "Sin dirección"}
+                      </p>
+                      <p className="admin-pendiente-meta">
+                        {bache.fechaReporte
+                          ? new Date(bache.fechaReporte).toLocaleDateString("es-AR")
+                          : "Sin fecha"}
+                        {bache.reportadoPor && (
+                          <> · Reportado por: {bache.reportadoPor.nombre || bache.reportadoPor.email}</>
+                        )}
+                      </p>
+                    </div>
+                    <div className="admin-pendiente-actions">
+                      <button
+                        type="button"
+                        className="btn btn-approve"
+                        onClick={() => handleAprobarBache(bache._id)}
+                        disabled={accionandoId === bache._id}
+                      >
+                        {accionandoId === bache._id ? "..." : "Aprobar"}
+                      </button>
+                      <button
+                        type="button"
+                        className="btn btn-reject"
+                        onClick={() => handleRechazarBache(bache._id)}
+                        disabled={accionandoId === bache._id}
+                      >
+                        Rechazar
+                      </button>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
           )}
         </div>
       )}

@@ -14,7 +14,20 @@ export const adminAPI = {
     };
     const estado = normalizeEstadoBache(filters.estado);
     if (estado) params.estado = estado;
+    if (filters.estadoModeracion) params.estadoModeracion = filters.estadoModeracion;
     const response = await api.get("/admin/baches", { params });
+    return response.data;
+  },
+
+  aprobarBache: async (id) => {
+    const response = await api.post(`/admin/baches/${id}/aprobar`);
+    return response.data;
+  },
+
+  rechazarBache: async (id, motivoRechazo) => {
+    const response = await api.post(`/admin/baches/${id}/rechazar`, {
+      motivoRechazo: motivoRechazo || undefined,
+    });
     return response.data;
   },
 

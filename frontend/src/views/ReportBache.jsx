@@ -52,7 +52,10 @@ const ReportBache = () => {
         },
         images
       );
-      toast.success("Bache reportado exitosamente");
+      toast.success(
+        "Tu solicitud de reporte fue enviada. Un administrador analizará las imágenes y el contenido para validarlo. Te notificaremos cuando sea aprobado.",
+        { autoClose: 8000 }
+      );
       navigate("/");
     } catch (error) {
       const errorMessage =

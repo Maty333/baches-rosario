@@ -6,6 +6,12 @@ export const getBaches = async (req, res) => {
     const { estado, lat, lng, radio } = req.query;
     let query = {};
 
+    // Solo mostrar baches aprobados (o sin campo por compatibilidad con datos existentes)
+    query.$or = [
+      { estadoModeracion: "aprobado" },
+      { estadoModeracion: { $exists: false } },
+    ];
+
     // Filtro por estado
     if (estado) {
       query.estado = estado;
@@ -48,6 +54,19 @@ export const getBacheById = async (req, res) => {
       return res.status(404).json({ message: "Bache no encontrado" });
     }
 
+    // Si no está aprobado, solo el autor o un admin puede verlo
+    const estaAprobado =
+      bache.estadoModeracion === "aprobado" || bache.estadoModeracion == null;
+    if (!estaAprobado) {
+      const reportadoPorId =
+        bache.reportadoPor?._id?.toString() || bache.reportadoPor?.toString();
+      const esAutor = req.user && reportadoPorId === req.user.id;
+      const esAdmin = req.user?.rol === "admin";
+      if (!esAutor && !esAdmin) {
+        return res.status(404).json({ message: "Bache no encontrado" });
+      }
+    }
+
     res.json(bache);
   } catch (error) {
     // Manejar errores de ObjectId inválido
@@ -83,14 +102,15 @@ export const createBache = async (req, res) => {
       },
       imagenes,
       posicion,
+      estadoModeracion: "pendiente",
       reportadoPor: req.user.id,
     });
 
     await bache.save();
     await bache.populate("reportadoPor", "nombre email");
 
-    // Emitir evento Socket.io
-    req.io.emit("nuevoBache", bache);
+    // No emitir a público hasta que un admin apruebe
+    // req.io.emit("nuevoBache", bache);
 
     res.status(201).json(bache);
   } catch (error) {

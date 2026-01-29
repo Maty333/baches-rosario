@@ -51,6 +51,15 @@ const bacheSchema = new mongoose.Schema(
     tiempoSolucion: {
       type: Number, // días
     },
+    estadoModeracion: {
+      type: String,
+      enum: ["pendiente", "aprobado", "rechazado"],
+      default: "pendiente",
+    },
+    motivoRechazo: {
+      type: String,
+      trim: true,
+    },
     reportadoPor: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "User",
