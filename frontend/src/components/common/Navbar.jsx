@@ -48,7 +48,7 @@ const Navbar = () => {
                 <span className="navbar-username">{user?.nombre}</span>
                 <NotificationBadge />
                 <a
-                  href={`${import.meta.env.VITE_API_URL?.replace("/api", "") || "http://localhost:3000"}/api-docs`}
+                  href={`${import.meta.env.VITE_API_URL?.replace("/api", "") || "http://localhost:3001"}/api-docs`}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="navbar-link"

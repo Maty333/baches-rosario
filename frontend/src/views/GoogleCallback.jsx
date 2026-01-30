@@ -1,46 +1,43 @@
 import { useEffect } from "react";
-import { useNavigate, useSearchParams } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext.jsx";
 import { useToast } from "../hooks/useToast.js";
 import Loading from "../components/common/Loading.jsx";
 
+/** Parsea el token del hash (#token=xxx) que envía el backend tras el redirect de Google */
+const getTokenFromHash = () => {
+  const hash = window.location.hash?.slice(1) || "";
+  const params = new URLSearchParams(hash);
+  return params.get("token");
+};
+
 const GoogleCallback = () => {
-  const [searchParams] = useSearchParams();
   const navigate = useNavigate();
-  const { handleGoogleCallback } = useAuth();
+  const { loginWithToken } = useAuth();
   const { showSuccess, showError } = useToast();
 
   useEffect(() => {
-    const code = searchParams.get("code");
-    const error = searchParams.get("error");
+    const token = getTokenFromHash();
 
-    if (error) {
-      showError(
-        "Error al autenticar con Google. Por favor, intenta nuevamente."
-      );
+    if (!token) {
+      showError("No se recibió la sesión. Intentá iniciar con Google de nuevo.");
       navigate("/login");
       return;
     }
 
-    if (!code) {
-      showError("No se recibió el código de autorización de Google.");
-      navigate("/login");
-      return;
-    }
-
-    const authenticate = async () => {
-      const result = await handleGoogleCallback(code);
+    const finishLogin = async () => {
+      const result = await loginWithToken(token);
       if (result.success) {
         showSuccess("Sesión iniciada correctamente con Google");
-        navigate("/");
+        navigate("/", { replace: true });
       } else {
-        showError(result.message || "Error al autenticar con Google");
+        showError(result.message || "Error al iniciar sesión");
         navigate("/login");
       }
     };
 
-    authenticate();
-  }, [searchParams, handleGoogleCallback, navigate, showSuccess, showError]);
+    finishLogin();
+  }, [loginWithToken, navigate, showSuccess, showError]);
 
   return <Loading />;
 };

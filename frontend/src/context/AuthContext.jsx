@@ -167,6 +167,21 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
+  /** Guarda el token recibido por redirect desde el backend (flujo Google OAuth) y carga el usuario */
+  const loginWithToken = async (token) => {
+    try {
+      localStorage.setItem("token", token);
+      await loadUser(token);
+      return { success: true };
+    } catch (error) {
+      localStorage.removeItem("token");
+      return {
+        success: false,
+        message: "Error al restaurar la sesión",
+      };
+    }
+  };
+
   const logout = () => {
     localStorage.removeItem("token");
     setUser(null);
@@ -179,6 +194,7 @@ export const AuthProvider = ({ children }) => {
     register,
     loginWithGoogle,
     handleGoogleCallback,
+    loginWithToken,
     updateProfile,
     logout,
     isAuthenticated: !!user,

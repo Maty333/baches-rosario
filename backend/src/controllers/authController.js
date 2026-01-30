@@ -250,18 +250,10 @@ export const googleAuth = async (req, res) => {
     // Generar JWT
     const token = generateToken(user._id);
 
-    res.json({
-      token,
-      user: {
-        id: user._id,
-        email: user.email,
-        nombre: user.nombre,
-        apellido: user.apellido,
-        rol: user.rol,
-        fotoPerfil: user.fotoPerfil,
-        metodoRegistro: user.metodoRegistro,
-      },
-    });
+    // Redirigir al frontend con el token en el hash (no se envía en referrer ni logs)
+    const frontendUrl = process.env.FRONTEND_URL || "http://localhost:5173";
+    const redirectUrl = `${frontendUrl}/auth/google/callback#token=${encodeURIComponent(token)}`;
+    res.redirect(redirectUrl);
   } catch (error) {
     console.error("Error en autenticación con Google:", error);
     res.status(500).json({ 

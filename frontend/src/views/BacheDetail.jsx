@@ -4,7 +4,7 @@ import { bachesAPI } from "../api/baches.js";
 import { useAuth } from "../context/AuthContext.jsx";
 import { toast } from "react-toastify";
 import CommentSection from "../components/comments/CommentSection.jsx";
-import { ESTADOS_LABELS, API_URL } from "../utils/constants.js";
+import { ESTADOS_LABELS, API_URL, SOCKET_URL } from "../utils/constants.js";
 import { sanitizeText } from "../utils/sanitize.js";
 import Loading from "../components/common/Loading.jsx";
 import "../styles/BacheDetail.css";
@@ -108,7 +108,7 @@ const BacheDetail = () => {
             {bache.imagenes.map((imagen, index) => (
               <img
                 key={index}
-                src={`http://localhost:3000${imagen}`}
+                src={`${SOCKET_URL}${imagen}`}
                 alt={`Imagen ${index + 1}`}
                 className="bache-detail-image"
               />

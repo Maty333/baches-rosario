@@ -1,5 +1,5 @@
 import { Link } from "react-router-dom";
-import { ESTADOS_LABELS } from "../../utils/constants.js";
+import { ESTADOS_LABELS, SOCKET_URL } from "../../utils/constants.js";
 import "../../styles/BacheCard.css";
 
 const BacheCard = ({ bache }) => {
@@ -10,7 +10,7 @@ const BacheCard = ({ bache }) => {
       {bache.imagenes && bache.imagenes.length > 0 && (
         <div className="bache-card-image">
           <img
-            src={`http://localhost:3000${bache.imagenes[0]}`}
+            src={`${SOCKET_URL}${bache.imagenes[0]}`}
             alt={bache.titulo}
             onError={(e) => {
               e.target.style.display = "none";

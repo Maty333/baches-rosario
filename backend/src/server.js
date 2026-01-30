@@ -37,8 +37,12 @@ app.use((req, res, next) => {
 // Conectar a MongoDB
 connectDB();
 
-// Seguridad: Helmet.js - Headers de seguridad
-app.use(helmet());
+// Seguridad: Helmet.js - Headers de seguridad (CORP cross-origin para que el frontend pueda cargar imágenes de /uploads)
+app.use(
+  helmet({
+    crossOriginResourcePolicy: { policy: "cross-origin" },
+  })
+);
 
 // CORS más restrictivo
 const corsOptions = {

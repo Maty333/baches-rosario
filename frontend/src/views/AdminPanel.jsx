@@ -196,7 +196,7 @@ const AdminPanel = () => {
 
   const handleEstadoChange = async (bacheId, nuevoEstado) => {
     try {
-      const response = await fetch(`http://localhost:3000/api/baches/${bacheId}/estado`, {
+      const response = await fetch(`${import.meta.env.VITE_API_URL || "http://localhost:3001/api"}/baches/${bacheId}/estado`, {
         method: "PATCH",
         headers: {
           "Content-Type": "application/json",
@@ -353,7 +353,7 @@ const AdminPanel = () => {
           ) : (
             <div className="admin-pendientes-list">
               {bachesPendientes.map((bache) => {
-                const baseUrl = (import.meta.env.VITE_API_URL || "http://localhost:3000/api").replace("/api", "");
+                const baseUrl = (import.meta.env.VITE_API_URL || "http://localhost:3001/api").replace("/api", "");
                 return (
                   <div key={bache._id} className="admin-pendiente-card">
                     <div className="admin-pendiente-imagenes">
