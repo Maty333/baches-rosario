@@ -1,147 +1,155 @@
-🛣️ Baches Rosario — Plataforma de Reporte Ciudadano
+# 🛣️ Baches Rosario — Plataforma de Reporte Ciudadano
 
-Aplicación web full-stack para el reporte, gestión y priorización de baches en la ciudad de Rosario, Argentina.
+🌐 **Demo en vivo:** Próximamente desplegado en producción.
+
+Aplicación web full-stack para el reporte, gestión y priorización de baches en la ciudad de Rosario, Argentina.  
 Permite a ciudadanos informar incidencias en la vía pública y a administradores gestionarlas en tiempo real.
 
 Proyecto enfocado en arquitectura moderna, interacción con mapas, tiempo real y gestión de usuarios.
 
-🏗️ Arquitectura del Proyecto
+---
+
+## 🏗️ Arquitectura del Proyecto
+
 baches-rosario/
-├── backend/   → API REST + WebSockets
-└── frontend/  → SPA React
+├── backend/ # API REST + WebSockets
+└── frontend/ # SPA React
 
 
-Arquitectura:
+
+**Arquitectura:**  
 SPA (React) + API REST (Node/Express) + MongoDB + WebSockets (Socket.io)
 
-⚙️ Stack Tecnológico
-🔙 Backend
+---
 
-Node.js
+## ⚙️ Stack Tecnológico
 
-Express
+### 🔙 Backend
+- Node.js  
+- Express  
+- MongoDB + Mongoose  
+- JWT Authentication  
+- Multer (subida de imágenes)  
+- Socket.io (eventos en tiempo real)
 
-MongoDB + Mongoose
+---
 
-JWT Authentication
+### 🔜 Frontend
+- React 19 + Vite  
+- React Router  
+- Leaflet (mapas interactivos)  
+- React Hook Form  
+- Axios  
+- Socket.io Client  
 
-Multer (subida de imágenes)
+---
 
-Socket.io (eventos en tiempo real)
+## 🚀 Funcionalidades Principales
 
-🔜 Frontend
+### 👤 Usuarios
+- Registro e inicio de sesión con JWT  
+- Perfil de usuario  
+- Historial de reportes  
 
-React 19 + Vite
+### 🕳️ Reporte de Baches
+- Selección de ubicación en mapa interactivo  
+- Subida de múltiples imágenes  
+- Descripción del problema  
+- Sistema de votos para priorización  
 
-React Router
+### 💬 Interacción
+- Comentarios en cada bache  
+- Notificaciones en tiempo real  
 
-Leaflet (mapas interactivos)
+### 🛠️ Panel de Administración
+- Moderación de reportes  
+- Gestión de usuarios  
+- Cambio de estados  
+- Estadísticas del sistema  
+- Tiempo promedio de resolución  
 
-React Hook Form
+---
 
-Axios
+## 📌 Estados de los Baches
 
-Socket.io Client
+| Estado       | Descripción                     |
+|-------------|---------------------------------|
+| Reportado   | Incidencia recién informada     |
+| En Proceso  | En reparación                   |
+| Solucionado | Problema resuelto               |
 
-🚀 Funcionalidades Principales
-👤 Usuarios
+---
 
-Registro e inicio de sesión con JWT
-
-Perfil de usuario
-
-Historial de reportes
-
-🕳️ Reporte de Baches
-
-Selección de ubicación en mapa interactivo
-
-Subida de múltiples imágenes
-
-Descripción del problema
-
-Sistema de votos para priorización
-
-💬 Interacción
-
-Comentarios en cada bache
-
-Notificaciones en tiempo real
-
-🛠️ Panel de Administración
-
-Moderación de reportes
-
-Gestión de usuarios
-
-Cambio de estados
-
-Estadísticas del sistema
-
-Tiempo promedio de resolución
-
-📌 Estados de los Baches
-Estado	Descripción
-Reportado	Incidencia recién informada
-En Proceso	En reparación
-Solucionado	Problema resuelto
-🔔 Tiempo Real
+## 🔔 Tiempo Real
 
 El sistema utiliza WebSockets para:
+- Actualización de nuevos reportes  
+- Cambios de estado  
+- Interacciones en vivo  
 
-Actualización de nuevos reportes
+---
 
-Cambios de estado
+## 🧠 Conceptos Aplicados
+- Arquitectura cliente-servidor  
+- Autenticación y autorización  
+- CRUD completo  
+- Manejo de archivos  
+- Geolocalización  
+- Estados de negocio  
+- Panel administrativo  
+- Paginación y filtros  
+- Comunicación en tiempo real  
 
-Interacciones en vivo
+---
 
-🧠 Conceptos Aplicados
+## 🔐 Variables de Entorno
 
-Arquitectura cliente-servidor
+El backend requiere un archivo `.env` con las siguientes variables:
 
-Autenticación y autorización
+PORT=3000
+MONGODB_URI=mongodb://localhost:27017/baches-rosario
+JWT_SECRET=tu_clave_secreta
+NODE_ENV=development
+FRONTEND_URL=http://localhost:5173
 
-CRUD completo
 
-Manejo de archivos
+---
 
-Geolocalización
+## 🛠️ Instalación Local
 
-Estados de negocio
+### Backend
 
-Panel administrativo
-
-Paginación y filtros
-
-Comunicación en tiempo real
-
-🛠️ Instalación Local
-Backend
 cd backend
 npm install
 npm run dev
 
-Frontend
+---
+
+### Frontend
+
 cd frontend
 npm install
 npm run dev
 
-🔮 Mejoras Futuras
 
-OAuth (Google Login)
+---
 
-Notificaciones push
+## 🔮 Mejoras Futuras
+- OAuth (Google Login)  
+- Notificaciones push  
+- Aplicación móvil  
+- Moderación automática con IA  
+- Dashboard con gráficos avanzados  
 
-Aplicación móvil
+---
 
-Moderación automática con IA
+## 📄 Propósito del Proyecto
 
-Dashboard con gráficos avanzados
+Proyecto full-stack desarrollado para simular un sistema real de gestión de incidencias urbanas, aplicando arquitectura moderna y buenas prácticas de ingeniería.
 
-📄 Propósito del Proyecto
+---
 
-Proyecto desarrollado como práctica de desarrollo full-stack, aplicando buenas prácticas, estructura profesional y tecnologías modernas del ecosistema JavaScript.
-
-🧪 Estado del Proyecto
+## 🧪 Estado del Proyecto
 
 Proyecto en desarrollo. Algunas funcionalidades pueden estar en mejora continua.
+
