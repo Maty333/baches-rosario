@@ -1,51 +1,147 @@
-# Baches Rosario - Aplicación de Reporte de Baches
+🛣️ Baches Rosario — Plataforma de Reporte Ciudadano
 
-Aplicación web para reportar y gestionar baches en la ciudad de Rosario, Argentina.
+Aplicación web full-stack para el reporte, gestión y priorización de baches en la ciudad de Rosario, Argentina.
+Permite a ciudadanos informar incidencias en la vía pública y a administradores gestionarlas en tiempo real.
 
-## Estructura del Proyecto
+Proyecto enfocado en arquitectura moderna, interacción con mapas, tiempo real y gestión de usuarios.
 
-```
+🏗️ Arquitectura del Proyecto
 baches-rosario/
-├── backend/          # API Node.js + Express
-└── frontend/         # Aplicación React + Vite
-```
-
-## Tecnologías
-
-### Backend
-- Node.js + Express
-- MongoDB + Mongoose
-- Socket.io (notificaciones en tiempo real)
-- JWT (autenticación)
-- Multer (subida de archivos)
-
-### Frontend
-- React 19
-- Vite
-- React Router
-- Leaflet (mapas)
-- Socket.io Client
-- React Hook Form
-- Axios
+├── backend/   → API REST + WebSockets
+└── frontend/  → SPA React
 
 
-## Funcionalidades
+Arquitectura:
+SPA (React) + API REST (Node/Express) + MongoDB + WebSockets (Socket.io)
 
-- ✅ Registro e inicio de sesión de usuarios
-- ✅ Reporte de baches con ubicación en mapa
-- ✅ Subida de múltiples imágenes por bache
-- ✅ Visualización de baches en mapa interactivo
-- ✅ Sistema de votos para priorizar baches
-- ✅ Comentarios en cada bache
-- ✅ Panel de administración
-- ✅ Notificaciones en tiempo real (Socket.io)
-- ✅ Filtros por estado de bache
-- ✅ Seguimiento de tiempo de solución
+⚙️ Stack Tecnológico
+🔙 Backend
 
-## Estados de Bache
+Node.js
 
-- **Reportado**: Bache recién reportado
-- **En Proceso**: Bache siendo trabajado
-- **Solucionado**: Bache reparado
+Express
 
+MongoDB + Mongoose
 
+JWT Authentication
+
+Multer (subida de imágenes)
+
+Socket.io (eventos en tiempo real)
+
+🔜 Frontend
+
+React 19 + Vite
+
+React Router
+
+Leaflet (mapas interactivos)
+
+React Hook Form
+
+Axios
+
+Socket.io Client
+
+🚀 Funcionalidades Principales
+👤 Usuarios
+
+Registro e inicio de sesión con JWT
+
+Perfil de usuario
+
+Historial de reportes
+
+🕳️ Reporte de Baches
+
+Selección de ubicación en mapa interactivo
+
+Subida de múltiples imágenes
+
+Descripción del problema
+
+Sistema de votos para priorización
+
+💬 Interacción
+
+Comentarios en cada bache
+
+Notificaciones en tiempo real
+
+🛠️ Panel de Administración
+
+Moderación de reportes
+
+Gestión de usuarios
+
+Cambio de estados
+
+Estadísticas del sistema
+
+Tiempo promedio de resolución
+
+📌 Estados de los Baches
+Estado	Descripción
+Reportado	Incidencia recién informada
+En Proceso	En reparación
+Solucionado	Problema resuelto
+🔔 Tiempo Real
+
+El sistema utiliza WebSockets para:
+
+Actualización de nuevos reportes
+
+Cambios de estado
+
+Interacciones en vivo
+
+🧠 Conceptos Aplicados
+
+Arquitectura cliente-servidor
+
+Autenticación y autorización
+
+CRUD completo
+
+Manejo de archivos
+
+Geolocalización
+
+Estados de negocio
+
+Panel administrativo
+
+Paginación y filtros
+
+Comunicación en tiempo real
+
+🛠️ Instalación Local
+Backend
+cd backend
+npm install
+npm run dev
+
+Frontend
+cd frontend
+npm install
+npm run dev
+
+🔮 Mejoras Futuras
+
+OAuth (Google Login)
+
+Notificaciones push
+
+Aplicación móvil
+
+Moderación automática con IA
+
+Dashboard con gráficos avanzados
+
+📄 Propósito del Proyecto
+
+Proyecto desarrollado como práctica de desarrollo full-stack, aplicando buenas prácticas, estructura profesional y tecnologías modernas del ecosistema JavaScript.
+
+🧪 Estado del Proyecto
+
+Proyecto en desarrollo. Algunas funcionalidades pueden estar en mejora continua.
