@@ -1,51 +1,155 @@
-# Baches Rosario - Aplicación de Reporte de Baches
+# 🛣️ Baches Rosario — Plataforma de Reporte Ciudadano
 
-Aplicación web para reportar y gestionar baches en la ciudad de Rosario, Argentina.
+🌐 **Demo en vivo:** Próximamente desplegado en producción.
 
-## Estructura del Proyecto
+Aplicación web full-stack para el reporte, gestión y priorización de baches en la ciudad de Rosario, Argentina.  
+Permite a ciudadanos informar incidencias en la vía pública y a administradores gestionarlas en tiempo real.
 
-```
+Proyecto enfocado en arquitectura moderna, interacción con mapas, tiempo real y gestión de usuarios.
+
+---
+
+## 🏗️ Arquitectura del Proyecto
+
 baches-rosario/
-├── backend/          # API Node.js + Express
-└── frontend/         # Aplicación React + Vite
-```
+├── backend/ # API REST + WebSockets
+└── frontend/ # SPA React
 
-## Tecnologías
+
+
+**Arquitectura:**  
+SPA (React) + API REST (Node/Express) + MongoDB + WebSockets (Socket.io)
+
+---
+
+## ⚙️ Stack Tecnológico
+
+### 🔙 Backend
+- Node.js  
+- Express  
+- MongoDB + Mongoose  
+- JWT Authentication  
+- Multer (subida de imágenes)  
+- Socket.io (eventos en tiempo real)
+
+---
+
+### 🔜 Frontend
+- React 19 + Vite  
+- React Router  
+- Leaflet (mapas interactivos)  
+- React Hook Form  
+- Axios  
+- Socket.io Client  
+
+---
+
+## 🚀 Funcionalidades Principales
+
+### 👤 Usuarios
+- Registro e inicio de sesión con JWT  
+- Perfil de usuario  
+- Historial de reportes  
+
+### 🕳️ Reporte de Baches
+- Selección de ubicación en mapa interactivo  
+- Subida de múltiples imágenes  
+- Descripción del problema  
+- Sistema de votos para priorización  
+
+### 💬 Interacción
+- Comentarios en cada bache  
+- Notificaciones en tiempo real  
+
+### 🛠️ Panel de Administración
+- Moderación de reportes  
+- Gestión de usuarios  
+- Cambio de estados  
+- Estadísticas del sistema  
+- Tiempo promedio de resolución  
+
+---
+
+## 📌 Estados de los Baches
+
+| Estado       | Descripción                     |
+|-------------|---------------------------------|
+| Reportado   | Incidencia recién informada     |
+| En Proceso  | En reparación                   |
+| Solucionado | Problema resuelto               |
+
+---
+
+## 🔔 Tiempo Real
+
+El sistema utiliza WebSockets para:
+- Actualización de nuevos reportes  
+- Cambios de estado  
+- Interacciones en vivo  
+
+---
+
+## 🧠 Conceptos Aplicados
+- Arquitectura cliente-servidor  
+- Autenticación y autorización  
+- CRUD completo  
+- Manejo de archivos  
+- Geolocalización  
+- Estados de negocio  
+- Panel administrativo  
+- Paginación y filtros  
+- Comunicación en tiempo real  
+
+---
+
+## 🔐 Variables de Entorno
+
+El backend requiere un archivo `.env` con las siguientes variables:
+
+PORT=3000
+MONGODB_URI=mongodb://localhost:27017/baches-rosario
+JWT_SECRET=tu_clave_secreta
+NODE_ENV=development
+FRONTEND_URL=http://localhost:5173
+
+
+---
+
+## 🛠️ Instalación Local
 
 ### Backend
-- Node.js + Express
-- MongoDB + Mongoose
-- Socket.io (notificaciones en tiempo real)
-- JWT (autenticación)
-- Multer (subida de archivos)
+
+cd backend
+npm install
+npm run dev
+
+---
 
 ### Frontend
-- React 19
-- Vite
-- React Router
-- Leaflet (mapas)
-- Socket.io Client
-- React Hook Form
-- Axios
+
+cd frontend
+npm install
+npm run dev
 
 
-## Funcionalidades
+---
 
-- ✅ Registro e inicio de sesión de usuarios
-- ✅ Reporte de baches con ubicación en mapa
-- ✅ Subida de múltiples imágenes por bache
-- ✅ Visualización de baches en mapa interactivo
-- ✅ Sistema de votos para priorizar baches
-- ✅ Comentarios en cada bache
-- ✅ Panel de administración
-- ✅ Notificaciones en tiempo real (Socket.io)
-- ✅ Filtros por estado de bache
-- ✅ Seguimiento de tiempo de solución
+## 🔮 Mejoras Futuras
+- OAuth (Google Login)  
+- Notificaciones push  
+- Aplicación móvil  
+- Moderación automática con IA  
+- Dashboard con gráficos avanzados  
 
-## Estados de Bache
+---
 
-- **Reportado**: Bache recién reportado
-- **En Proceso**: Bache siendo trabajado
-- **Solucionado**: Bache reparado
+## 📄 Propósito del Proyecto
 
+Proyecto full-stack desarrollado para simular un sistema real de gestión de incidencias urbanas, aplicando arquitectura moderna y buenas prácticas de ingeniería.
+
+---
+
+## 🧪 Estado del Proyecto
+
+Proyecto en desarrollo. Algunas funcionalidades pueden estar en mejora continua.
 
