@@ -1,7 +1,15 @@
 import express from "express";
 import { body } from "express-validator";
 import rateLimit from "express-rate-limit";
-import { register, login, getMe, updateProfile, googleAuth, getGoogleAuthUrl } from "../controllers/authController.js";
+import {
+  register,
+  login,
+  getMe,
+  verifyEmail,
+  updateProfile,
+  googleAuth,
+  getGoogleAuthUrl,
+} from "../controllers/authController.js";
 import { authenticate } from "../middleware/auth.js";
 
 const router = express.Router();
@@ -18,16 +26,14 @@ const authLimiter = rateLimit({
 
 // Validaciones
 const registerValidation = [
-  body("email")
-    .isEmail()
-    .withMessage("Email inválido")
-    .normalizeEmail()
-    .trim(),
+  body("email").isEmail().withMessage("Email inválido").normalizeEmail().trim(),
   body("password")
     .isLength({ min: 6 })
     .withMessage("La contraseña debe tener al menos 6 caracteres")
     .matches(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)/)
-    .withMessage("La contraseña debe contener al menos una mayúscula, una minúscula y un número"),
+    .withMessage(
+      "La contraseña debe contener al menos una mayúscula, una minúscula y un número"
+    ),
   body("nombre")
     .notEmpty()
     .withMessage("El nombre es requerido")
@@ -51,7 +57,9 @@ const registerValidation = [
     .withMessage("La edad debe ser un número entre 13 y 120 años"),
   body("sexo")
     .isIn(["masculino", "femenino", "otro", "prefiero no decir"])
-    .withMessage("El sexo debe ser: masculino, femenino, otro o prefiero no decir"),
+    .withMessage(
+      "El sexo debe ser: masculino, femenino, otro o prefiero no decir"
+    ),
 ];
 
 const loginValidation = [
@@ -89,7 +97,9 @@ const updateProfileValidation = [
   body("sexo")
     .optional()
     .isIn(["masculino", "femenino", "otro", "prefiero no decir"])
-    .withMessage("El sexo debe ser: masculino, femenino, otro o prefiero no decir"),
+    .withMessage(
+      "El sexo debe ser: masculino, femenino, otro o prefiero no decir"
+    ),
 ];
 
 /**
@@ -214,6 +224,12 @@ router.post("/register", authLimiter, registerValidation, register);
  *         description: Credenciales inválidas
  */
 router.post("/login", authLimiter, loginValidation, login);
+
+/**
+ * GET /api/auth/verify-email?token=xxx
+ * Verifica el email con el token enviado por correo. Redirige al frontend /login?verified=1
+ */
+router.get("/verify-email", verifyEmail);
 
 /**
  * @swagger
@@ -396,4 +412,3 @@ router.get("/google/url", getGoogleAuthUrl);
 router.get("/google/callback", googleAuth);
 
 export default router;
-

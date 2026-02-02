@@ -61,6 +61,14 @@ export const AuthProvider = ({ children }) => {
             "Demasiados intentos. Esperá unos minutos y volvé a intentar.",
         };
       }
+      if (error.response?.status === 403) {
+        return {
+          success: false,
+          message:
+            error.response?.data?.message ||
+            "Verificá tu email antes de iniciar sesión.",
+        };
+      }
       return {
         success: false,
         message: error.response?.data?.message || "Error al iniciar sesión",
@@ -78,6 +86,13 @@ export const AuthProvider = ({ children }) => {
         edad,
         sexo
       );
+      if (data.requiresVerification) {
+        return {
+          success: true,
+          requiresVerification: true,
+          message: data.message,
+        };
+      }
       localStorage.setItem("token", data.token);
       setUser(data.user);
       return { success: true };

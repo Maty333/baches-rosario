@@ -59,6 +59,19 @@ const userSchema = new mongoose.Schema(
       enum: ["email", "google"],
       default: "email",
     },
+    // Verificación de email (solo para registro por email; Google se considera verificado)
+    emailVerified: {
+      type: Boolean,
+      default: false,
+    },
+    emailVerificationToken: {
+      type: String,
+      default: null,
+    },
+    emailVerificationExpires: {
+      type: Date,
+      default: null,
+    },
     fechaRegistro: {
       type: Date,
       default: Date.now,
@@ -88,4 +101,3 @@ userSchema.methods.comparePassword = async function (candidatePassword) {
 };
 
 export default mongoose.model("User", userSchema);
-

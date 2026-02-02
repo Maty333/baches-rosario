@@ -154,8 +154,16 @@ const Register = () => {
     );
 
     if (result.success) {
-      showSuccess("Registro exitoso");
-      navigate("/");
+      if (result.requiresVerification) {
+        showSuccess(
+          result.message || "Revisá tu email para verificar tu cuenta.",
+          { autoClose: 8000 }
+        );
+        navigate("/login");
+      } else {
+        showSuccess("Registro exitoso");
+        navigate("/");
+      }
     } else {
       if (result.errors && Array.isArray(result.errors)) {
         const backendErrors = {};

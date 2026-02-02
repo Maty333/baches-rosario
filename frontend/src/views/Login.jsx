@@ -1,5 +1,5 @@
-import { useState } from "react";
-import { useNavigate, Link } from "react-router-dom";
+import { useState, useEffect } from "react";
+import { useNavigate, Link, useSearchParams } from "react-router-dom";
 import { useAuth } from "../context/AuthContext.jsx";
 import { useToast } from "../hooks/useToast.js";
 import "../styles/Login.css";
@@ -11,9 +11,50 @@ const Login = () => {
   const [loading, setLoading] = useState(false);
   const [failedAttempts, setFailedAttempts] = useState(0);
   const [lockedUntil, setLockedUntil] = useState(null);
-  const { login } = useAuth();
+  const { login, loginWithToken } = useAuth();
   const navigate = useNavigate();
+  const [searchParams, setSearchParams] = useSearchParams();
   const { showSuccess, showError } = useToast();
+
+  // Auto-login cuando llega desde el link de verificación de email (#token=...)
+  useEffect(() => {
+    const hash = window.location.hash;
+    if (!hash.startsWith("#token=")) return;
+    const token = decodeURIComponent(hash.replace("#token=", "").split("&")[0]);
+    if (!token) return;
+    window.history.replaceState(
+      null,
+      "",
+      window.location.pathname + window.location.search
+    );
+    (async () => {
+      const result = await loginWithToken(token);
+      if (result.success) {
+        showSuccess("¡Cuenta verificada! Ya estás dentro.");
+        navigate("/", { replace: true });
+      } else {
+        showError(result.message || "No se pudo iniciar sesión.");
+      }
+    })();
+  }, [loginWithToken, navigate, showSuccess, showError]);
+
+  useEffect(() => {
+    const verified = searchParams.get("verified");
+    const error = searchParams.get("error");
+    if (verified === "1") {
+      showSuccess("Cuenta verificada. Ya podés iniciar sesión.");
+      setSearchParams({}, { replace: true });
+    } else if (error) {
+      const messages = {
+        token_required: "Faltó el token de verificación.",
+        token_invalid_or_expired:
+          "El enlace de verificación venció o no es válido. Podés registrarte de nuevo para recibir otro correo.",
+        verification_failed: "No se pudo verificar el email. Intentá de nuevo.",
+      };
+      showError(messages[error] || "Error al verificar el email.");
+      setSearchParams({}, { replace: true });
+    }
+  }, [searchParams, setSearchParams, showSuccess, showError]);
 
   const isLocked = lockedUntil && Date.now() < lockedUntil;
   const lockSecondsLeft = isLocked
