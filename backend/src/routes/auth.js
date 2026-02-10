@@ -6,6 +6,8 @@ import {
   login,
   getMe,
   verifyEmail,
+  forgotPassword,
+  resetPassword,
   updateProfile,
   googleAuth,
   getGoogleAuthUrl,
@@ -65,6 +67,19 @@ const registerValidation = [
 const loginValidation = [
   body("email").isEmail().withMessage("Email inválido"),
   body("password").notEmpty().withMessage("La contraseña es requerida"),
+];
+
+const forgotValidation = [body("email").isEmail().withMessage("Email inválido")];
+
+const resetValidation = [
+  body("token").notEmpty().withMessage("Token requerido"),
+  body("password")
+    .isLength({ min: 6 })
+    .withMessage("La contraseña debe tener al menos 6 caracteres")
+    .matches(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)/)
+    .withMessage(
+      "La contraseña debe contener al menos una mayúscula, una minúscula y un número"
+    ),
 ];
 
 const updateProfileValidation = [
@@ -224,6 +239,10 @@ router.post("/register", authLimiter, registerValidation, register);
  *         description: Credenciales inválidas
  */
 router.post("/login", authLimiter, loginValidation, login);
+
+// Recuperación de contraseña
+router.post("/forgot-password", authLimiter, forgotValidation, forgotPassword);
+router.post("/reset-password", authLimiter, resetValidation, resetPassword);
 
 /**
  * GET /api/auth/verify-email?token=xxx

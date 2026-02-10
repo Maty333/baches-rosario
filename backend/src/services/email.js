@@ -68,3 +68,44 @@ export async function sendVerificationEmail(to, nombre, verificationUrl) {
     return { sent: false, error: err.message };
   }
 }
+
+/**
+ * Envía email para restablecer contraseña.
+ * @param {string} to
+ * @param {string} nombre
+ * @param {string} resetUrl
+ */
+export async function sendPasswordResetEmail(to, nombre, resetUrl) {
+  const transporter = getTransporter();
+  const from =
+    process.env.EMAIL_FROM || process.env.SMTP_USER || "noreply@bachesrosario.com";
+
+  const mailOptions = {
+    from: `Baches Rosario <${from}>`,
+    to,
+    subject: "Restablecer contraseña - Baches Rosario",
+    html: `
+      <h2>Hola ${nombre}</h2>
+      <p>Recibimos una solicitud para restablecer tu contraseña.</p>
+      <p>Hacé clic en el siguiente enlace para elegir una nueva contraseña (válido por 1 hora):</p>
+      <p><a href="${resetUrl}" style="display:inline-block;padding:10px 20px;background:#e74c3c;color:#fff;text-decoration:none;border-radius:5px;">Restablecer mi contraseña</a></p>
+      <p>Si no solicitaste este cambio, podés ignorar este correo.</p>
+      <p>— Baches Rosario</p>
+    `,
+    text: `Hola ${nombre}. Restablecé tu contraseña accediendo a: ${resetUrl}`,
+  };
+
+  if (!transporter) {
+    console.log("[EMAIL] SMTP no configurado. Link de reset (copiar en desarrollo):");
+    console.log(resetUrl);
+    return { sent: false, error: "SMTP not configured" };
+  }
+
+  try {
+    await transporter.sendMail(mailOptions);
+    return { sent: true };
+  } catch (err) {
+    console.error("[EMAIL] Error enviando reset de contraseña:", err.message);
+    return { sent: false, error: err.message };
+  }
+}

@@ -3,7 +3,7 @@ import jwt from "jsonwebtoken";
 import { validationResult } from "express-validator";
 import { OAuth2Client } from "google-auth-library";
 import User from "../models/User.js";
-import { sendVerificationEmail } from "../services/email.js";
+import { sendVerificationEmail, sendPasswordResetEmail } from "../services/email.js";
 
 const generateToken = (userId) => {
   return jwt.sign({ id: userId }, process.env.JWT_SECRET, {
@@ -146,6 +146,66 @@ export const verifyEmail = async (req, res) => {
   }
 };
 
+/** Solicitar restablecimiento de contraseña: genera token y envía email */
+export const forgotPassword = async (req, res) => {
+  try {
+    const { email } = req.body;
+    if (!email) return res.status(400).json({ message: "Email requerido" });
+
+    const user = await User.findOne({ email });
+
+    // Siempre responder 200 para evitar enumeración de usuarios
+    if (!user) {
+      return res.json({ message: "Si existe una cuenta, se envió el correo de restablecimiento" });
+    }
+
+    const token = crypto.randomBytes(32).toString("hex");
+    const expires = new Date(Date.now() + 60 * 60 * 1000); // 1 hora
+
+    user.resetPasswordToken = token;
+    user.resetPasswordExpires = expires;
+    await user.save();
+
+    const frontendUrl = process.env.FRONTEND_URL || "http://localhost:5173";
+    const resetUrl = `${frontendUrl}/reset-password?token=${token}`;
+
+    await sendPasswordResetEmail(email, user.nombre || user.email, resetUrl);
+
+    return res.json({ message: "Si existe una cuenta, se envió el correo de restablecimiento" });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
+/** Restablecer contraseña usando token */
+export const resetPassword = async (req, res) => {
+  try {
+    const { token, password } = req.body;
+    if (!token || !password) {
+      return res.status(400).json({ message: "Token y nueva contraseña requeridos" });
+    }
+
+    const user = await User.findOne({
+      resetPasswordToken: token,
+      resetPasswordExpires: { $gt: new Date() },
+    });
+
+    if (!user) {
+      return res.status(400).json({ message: "Token inválido o expirado" });
+    }
+
+    user.password = password;
+    user.resetPasswordToken = undefined;
+    user.resetPasswordExpires = undefined;
+    await user.save();
+
+    const jwtToken = generateToken(user._id);
+    return res.json({ message: "Contraseña actualizada", token: jwtToken });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
 export const updateProfile = async (req, res) => {
   try {
     const errors = validationResult(req);
@@ -227,19 +287,13 @@ export const googleAuth = async (req, res) => {
       tokens = tokenResponse.tokens;
     } catch (tokenError) {
       console.error("Error al intercambiar código por tokens:", tokenError);
+      const frontendUrl = process.env.FRONTEND_URL || "http://localhost:5173";
 
       if (tokenError.message && tokenError.message.includes("invalid_grant")) {
-        return res.status(400).json({
-          message:
-            "El código de autorización ha expirado o ya fue usado. Por favor, intenta iniciar sesión nuevamente.",
-          error: "invalid_grant",
-        });
+        return res.redirect(`${frontendUrl}/auth/google/callback?error=invalid_grant`);
       }
 
-      return res.status(400).json({
-        message: "Error al intercambiar código de autorización",
-        error: tokenError.message,
-      });
+      return res.redirect(`${frontendUrl}/auth/google/callback?error=server_error`);
     }
 
     client.setCredentials(tokens);
@@ -308,10 +362,8 @@ export const googleAuth = async (req, res) => {
     res.redirect(redirectUrl);
   } catch (error) {
     console.error("Error en autenticación con Google:", error);
-    res.status(500).json({
-      message: "Error al autenticar con Google",
-      error: error.message,
-    });
+    const frontendUrl = process.env.FRONTEND_URL || "http://localhost:5173";
+    res.redirect(`${frontendUrl}/auth/google/callback?error=server_error`);
   }
 };
 

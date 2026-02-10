@@ -1,83 +1,56 @@
-import {
-  BrowserRouter as Router,
-  Routes,
-  Route,
-  Navigate,
-} from "react-router-dom";
-import { useAuth } from "./context/AuthContext.jsx";
-import { ToastContainer } from "react-toastify";
-import "react-toastify/dist/ReactToastify.css";
+import { BrowserRouter as Router, Routes, Route } from 'react-router-dom'
+import RouteGuard from './components/common/RouteGuard.jsx'
+import { ToastContainer } from 'react-toastify'
+import 'react-toastify/dist/ReactToastify.css'
 
-import Navbar from "./components/common/Navbar.jsx";
-import ConnectionStatus from "./components/common/ConnectionStatus.jsx";
+import Navbar from './components/common/Navbar.jsx'
+import ConnectionStatus from './components/common/ConnectionStatus.jsx'
 
-import Home from "./views/Home.jsx";
-import Login from "./views/Login.jsx";
-import Register from "./views/Register.jsx";
-import BacheDetail from "./views/BacheDetail.jsx";
-import ReportBache from "./views/ReportBache.jsx";
-import AdminPanel from "./views/AdminPanel.jsx";
-import GoogleCallback from "./views/GoogleCallback.jsx";
+import Home from './views/Home.jsx'
+import Login from './views/Login.jsx'
+import Register from './views/Register.jsx'
+import ForgotPassword from './views/ForgotPassword.jsx'
+import ResetPassword from './views/ResetPassword.jsx'
+import BacheDetail from './views/BacheDetail.jsx'
+import ReportBache from './views/ReportBache.jsx'
+import AdminPanel from './views/AdminPanel.jsx'
+import GoogleCallback from './views/GoogleCallback.jsx'
 
-function PrivateRoute({ children }) {
-  const { isAuthenticated, loading } = useAuth();
+// Routes guarded by authentication/authorization are handled by `RouteGuard`.
 
-  if (loading) {
-    return <div>Cargando...</div>;
-  }
-
-  return isAuthenticated ? children : <Navigate to="/login" />;
-}
-
-function AdminRoute({ children }) {
-  const { isAuthenticated, isAdmin, loading } = useAuth();
-
-  if (loading) {
-    return <div>Cargando...</div>;
-  }
-
-  if (!isAuthenticated) {
-    return <Navigate to="/login" />;
-  }
-
-  if (!isAdmin) {
-    return <Navigate to="/" />;
-  }
-
-  return children;
-}
-
-function App() {
+function App () {
   return (
     <Router>
-      <div className="App">
+      <div className='App'>
         <ConnectionStatus />
         <Navbar />
         <Routes>
-          <Route path="/" element={<Home />} />
-          <Route path="/login" element={<Login />} />
-          <Route path="/register" element={<Register />} />
-          <Route path="/auth/google/callback" element={<GoogleCallback />} />
-          <Route path="/bache/:id" element={<BacheDetail />} />
+          <Route path='/' element={<Home />} />
+          <Route path='/login' element={<Login />} />
+          <Route path='/forgot-password' element={<ForgotPassword />} />
+          <Route path='/reset-password' element={<ResetPassword />} />
+          <Route path='/register' element={<Register />} />
+          <Route path='/auth/google/callback' element={<GoogleCallback />} />
+          <Route path='/bache/:id' element={<BacheDetail />} />
           <Route
-            path="/reportar"
+            path='/reportar'
             element={
-              <PrivateRoute>
+              <RouteGuard>
                 <ReportBache />
-              </PrivateRoute>
+              </RouteGuard>
             }
           />
           <Route
-            path="/admin"
+            path='/admin'
             element={
-              <AdminRoute>
+              <RouteGuard requireAdmin={true}>
                 <AdminPanel />
-              </AdminRoute>
+              </RouteGuard>
             }
           />
         </Routes>
         <ToastContainer
-          position="top-right"
+          position='top-right'
           autoClose={3000}
           hideProgressBar={false}
           newestOnTop={true}
@@ -86,12 +59,12 @@ function App() {
           pauseOnFocusLoss
           draggable
           pauseOnHover
-          theme="light"
+          theme='light'
           limit={5}
         />
       </div>
     </Router>
-  );
+  )
 }
 
-export default App;
+export default App

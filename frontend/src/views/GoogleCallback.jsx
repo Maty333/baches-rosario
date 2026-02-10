@@ -11,17 +11,45 @@ const getTokenFromHash = () => {
   return params.get("token");
 };
 
+/** Obtiene parámetros de error de la URL */
+const getErrorFromUrl = () => {
+  const params = new URLSearchParams(window.location.search);
+  return params.get("error");
+};
+
 const GoogleCallback = () => {
   const navigate = useNavigate();
-  const { loginWithToken } = useAuth();
+  const { loginWithToken, loginWithGoogle } = useAuth();
   const { showSuccess, showError } = useToast();
 
   useEffect(() => {
+    const errorParam = getErrorFromUrl();
     const token = getTokenFromHash();
+
+    // Manejo de errores específicos de OAuth
+    if (errorParam) {
+      const errorMessages = {
+        invalid_grant: "El código de autorización expiró. Por favor, intenta iniciar con Google de nuevo.",
+        access_denied: "Acceso denegado. Por favor, intenta de nuevo.",
+        server_error: "Error temporal en Google. Por favor, intenta más tarde.",
+        temporarily_unavailable: "Google no está disponible en este momento. Por favor, intenta más tarde.",
+      };
+
+      const message = errorMessages[errorParam] || "Error al autenticar con Google. Intenta de nuevo.";
+      showError(message);
+      
+      // Redirigir a login con opción de reintentar
+      setTimeout(() => {
+        navigate("/login");
+      }, 3000);
+      return;
+    }
 
     if (!token) {
       showError("No se recibió la sesión. Intentá iniciar con Google de nuevo.");
-      navigate("/login");
+      setTimeout(() => {
+        navigate("/login");
+      }, 2000);
       return;
     }
 
@@ -37,7 +65,7 @@ const GoogleCallback = () => {
     };
 
     finishLogin();
-  }, [loginWithToken, navigate, showSuccess, showError]);
+  }, [loginWithToken, loginWithGoogle, navigate, showSuccess, showError]);
 
   return <Loading />;
 };
