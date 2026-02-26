@@ -64,7 +64,7 @@ SPA (React) + API REST (Node/Express) + MongoDB + WebSockets (Socket.io)
 ### 🛠️ Panel de Administración
 - Moderación de reportes  
 - Gestión de usuarios  
-- Cambio de estados  
+- Cambio de estados (también los autores pueden modificar sus propios baches con pruebas) (admins y autores con pruebas fotográficas)  
 - Estadísticas del sistema  
 - Tiempo promedio de resolución  
 

@@ -9,7 +9,6 @@ import {
   votarBache,
 } from "../controllers/bacheController.js";
 import { authenticate } from "../middleware/auth.js";
-import { isAdmin } from "../middleware/auth.js";
 import { upload } from "../middleware/upload.js";
 import { validateObjectId } from "../middleware/validateObjectId.js";
 import { handleValidationErrors } from "../middleware/validationHandler.js";
@@ -254,7 +253,12 @@ router.put("/:id", validateObjectId("id"), authenticate, upload.array("imagenes"
  * @swagger
  * /api/baches/{id}/estado:
  *   patch:
- *     summary: Cambiar estado de bache (Solo Admin)
+ *     summary: Cambiar estado de bache
+ *     description: |
+ *       - Los administradores pueden modificar el estado libremente enviando JSON.
+ *       - El autor del bache también puede cambiar el estado **siempre que** suba
+ *         al menos una imagen de prueba (multipart/form-data con campo `imagenes`).
+ *     tags: [Baches]
  *     tags: [Baches]
  *     security:
  *       - bearerAuth: []
@@ -277,6 +281,24 @@ router.put("/:id", validateObjectId("id"), authenticate, upload.array("imagenes"
  *                 type: string
  *                 enum: [reportado, en_proceso, solucionado]
  *                 example: en_proceso
+ *         multipart/form-data:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - estado
+ *               - imagenes
+ *             properties:
+ *               estado:
+ *                 type: string
+ *                 enum: [reportado, en_proceso, solucionado]
+ *                 example: solucionado
+ *               imagenes:
+ *                 type: array
+ *                 items:
+ *                   type: string
+ *                   format: binary
+ *                 minItems: 1
+ *                 maxItems: 5
  *     responses:
  *       200:
  *         description: Estado actualizado
@@ -285,11 +307,22 @@ router.put("/:id", validateObjectId("id"), authenticate, upload.array("imagenes"
  *             schema:
  *               $ref: '#/components/schemas/Bache'
  *       403:
- *         description: Se requiere rol de administrador
+ *         description: Sin permisos para cambiar el estado (p.ej. no es admin ni autor)
  *       404:
  *         description: Bache no encontrado
  */
-router.patch("/:id/estado", validateObjectId("id"), authenticate, isAdmin, updateEstadoValidation, handleValidationErrors, updateEstado);
+// permitir que el propietario del bache cambie su propio estado siempre que adjunte
+// imágenes de prueba. La función `updateEstado` se encargará de validar permisos.
+// No usamos `isAdmin` aquí porque la lógica se maneja en el controlador.
+router.patch(
+  "/:id/estado",
+  validateObjectId("id"),
+  authenticate,
+  upload.array("imagenes", 5),
+  updateEstadoValidation,
+  handleValidationErrors,
+  updateEstado
+);
 
 /**
  * @swagger

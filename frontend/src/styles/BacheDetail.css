@@ -140,3 +140,35 @@
   font-size: 0.9rem;
 }
 
+.bache-detail-estado-form {
+  margin: 1.5rem 0;
+  padding: 1rem;
+  border: 1px solid #bdc3c7;
+  border-radius: 6px;
+  background: #f9f9f9;
+}
+
+.bache-detail-estado-form h3 {
+  margin-top: 0;
+}
+
+.bache-detail-estado-form select,
+.bache-detail-estado-form input[type=file] {
+  display: block;
+  margin: 0.5rem 0 1rem;
+}
+
+.update-estado-button {
+  background-color: #27ae60;
+  color: white;
+  border: none;
+  padding: 0.5rem 1rem;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.update-estado-button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+

@@ -1,336 +1,359 @@
-import { useMemo, useState, useEffect } from "react";
-import { adminAPI } from "../api/admin.js";
-import { bachesAPI } from "../api/baches.js";
-import { toast } from "react-toastify";
-import { ESTADOS_BACHE, ESTADOS_LABELS } from "../utils/constants.js";
-import Loading from "../components/common/Loading.jsx";
-import "../styles/AdminPanel.css";
+import { useMemo, useState, useEffect } from 'react'
+import { adminAPI } from '../api/admin.js'
+import { bachesAPI } from '../api/baches.js'
+import { toast } from 'react-toastify'
+import { ESTADOS_BACHE, ESTADOS_LABELS } from '../utils/constants.js'
+import Loading from '../components/common/Loading.jsx'
+import '../styles/AdminPanel.css'
 
 const AdminPanel = () => {
-  const [stats, setStats] = useState(null);
-  const [baches, setBaches] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [filters, setFilters] = useState({ estado: "", page: 1, limit: 20 });
-  const [bachesPagination, setBachesPagination] = useState(null);
+  const [stats, setStats] = useState(null)
+  const [baches, setBaches] = useState([])
+  const [loading, setLoading] = useState(true)
+  const [filters, setFilters] = useState({ estado: '', page: 1, limit: 20 })
+  const [bachesPagination, setBachesPagination] = useState(null)
 
-  const [activeTab, setActiveTab] = useState("dashboard");
+  const [activeTab, setActiveTab] = useState('dashboard')
 
-  const [bachesPendientes, setBachesPendientes] = useState([]);
-  const [pendientesLoading, setPendientesLoading] = useState(false);
-  const [accionandoId, setAccionandoId] = useState(null);
+  const [bachesPendientes, setBachesPendientes] = useState([])
+  const [pendientesLoading, setPendientesLoading] = useState(false)
+  const [accionandoId, setAccionandoId] = useState(null)
 
-  const [users, setUsers] = useState([]);
-  const [usersPagination, setUsersPagination] = useState(null);
-  const [usersLoading, setUsersLoading] = useState(false);
-  const [userFilters, setUserFilters] = useState({ rol: "", search: "", page: 1, limit: 20 });
+  const [users, setUsers] = useState([])
+  const [usersPagination, setUsersPagination] = useState(null)
+  const [usersLoading, setUsersLoading] = useState(false)
+  const [userFilters, setUserFilters] = useState({
+    rol: '',
+    search: '',
+    page: 1,
+    limit: 20
+  })
 
-  const [selectedUserId, setSelectedUserId] = useState(null);
-  const [selectedUser, setSelectedUser] = useState(null);
-  const [selectedUserLoading, setSelectedUserLoading] = useState(false);
-  const [editMode, setEditMode] = useState(false);
+  const [selectedUserId, setSelectedUserId] = useState(null)
+  const [selectedUser, setSelectedUser] = useState(null)
+  const [selectedUserLoading, setSelectedUserLoading] = useState(false)
+  const [editMode, setEditMode] = useState(false)
   const [editForm, setEditForm] = useState({
-    nombre: "",
-    apellido: "",
-    email: "",
-    edad: "",
-    sexo: "",
-  });
-  const [savingUser, setSavingUser] = useState(false);
+    nombre: '',
+    apellido: '',
+    email: '',
+    edad: '',
+    sexo: ''
+  })
+  const [savingUser, setSavingUser] = useState(false)
 
   const loadStats = async () => {
     try {
-      const data = await adminAPI.getStats();
-      setStats(data);
-      setLoading(false);
+      const data = await adminAPI.getStats()
+      setStats(data)
+      setLoading(false)
     } catch (error) {
-      console.error("Error cargando estadísticas:", error);
-      toast.error("Error cargando estadísticas");
-      setLoading(false);
+      console.error('Error cargando estadísticas:', error)
+      toast.error('Error cargando estadísticas')
+      setLoading(false)
     }
-  };
+  }
 
   const loadBaches = async () => {
     try {
-      setLoading(true);
-      const data = await adminAPI.getAllBaches(filters);
-      setBaches(data.baches);
-      setBachesPagination(data.pagination);
+      setLoading(true)
+      const data = await adminAPI.getAllBaches(filters)
+      setBaches(data.baches)
+      setBachesPagination(data.pagination)
     } catch (error) {
-      toast.error("Error cargando baches");
+      toast.error('Error cargando baches')
     } finally {
-      setLoading(false);
+      setLoading(false)
     }
-  };
+  }
 
   const loadPendientes = async () => {
     try {
-      setPendientesLoading(true);
+      setPendientesLoading(true)
       const data = await adminAPI.getAllBaches({
-        estadoModeracion: "pendiente",
-        limit: 50,
-      });
-      setBachesPendientes(data.baches || []);
+        estadoModeracion: 'pendiente',
+        limit: 50
+      })
+      setBachesPendientes(data.baches || [])
     } catch (error) {
-      toast.error("Error cargando solicitudes pendientes");
+      toast.error('Error cargando solicitudes pendientes')
     } finally {
-      setPendientesLoading(false);
+      setPendientesLoading(false)
     }
-  };
+  }
 
-  const handleAprobarBache = async (id) => {
+  const handleAprobarBache = async id => {
     try {
-      setAccionandoId(id);
-      const res = await adminAPI.aprobarBache(id);
-      toast.success(res.message || "Bache aprobado");
-      await loadPendientes();
-      await loadStats();
+      setAccionandoId(id)
+      const res = await adminAPI.aprobarBache(id)
+      toast.success(res.message || 'Bache aprobado')
+      await loadPendientes()
+      await loadStats()
     } catch (error) {
-      toast.error(error.response?.data?.message || "Error al aprobar");
+      toast.error(error.response?.data?.message || 'Error al aprobar')
     } finally {
-      setAccionandoId(null);
+      setAccionandoId(null)
     }
-  };
+  }
 
-  const handleRechazarBache = async (id) => {
-    const motivo = window.prompt("Motivo del rechazo (opcional):");
-    if (motivo === null) return;
+  const handleRechazarBache = async id => {
+    const motivo = window.prompt('Motivo del rechazo (opcional):')
+    if (motivo === null) return
     try {
-      setAccionandoId(id);
-      const res = await adminAPI.rechazarBache(id, motivo || undefined);
-      toast.success(res.message || "Bache rechazado");
-      await loadPendientes();
-      await loadStats();
+      setAccionandoId(id)
+      const res = await adminAPI.rechazarBache(id, motivo || undefined)
+      toast.success(res.message || 'Bache rechazado')
+      await loadPendientes()
+      await loadStats()
     } catch (error) {
-      toast.error(error.response?.data?.message || "Error al rechazar");
+      toast.error(error.response?.data?.message || 'Error al rechazar')
     } finally {
-      setAccionandoId(null);
+      setAccionandoId(null)
     }
-  };
+  }
 
   const loadUsers = async () => {
     try {
-      setUsersLoading(true);
-      const data = await adminAPI.getAllUsers(userFilters);
-      setUsers(data.usuarios || []);
-      setUsersPagination(data.pagination);
+      setUsersLoading(true)
+      const data = await adminAPI.getAllUsers(userFilters)
+      setUsers(data.usuarios || [])
+      setUsersPagination(data.pagination)
     } catch (error) {
-      toast.error("Error cargando usuarios");
+      toast.error('Error cargando usuarios')
     } finally {
-      setUsersLoading(false);
+      setUsersLoading(false)
     }
-  };
+  }
 
-  const loadUserDetail = async (userId) => {
+  const loadUserDetail = async userId => {
     try {
-      setSelectedUserLoading(true);
-      const data = await adminAPI.getUserById(userId);
-      setSelectedUser(data);
-      setEditMode(false);
+      setSelectedUserLoading(true)
+      const data = await adminAPI.getUserById(userId)
+      setSelectedUser(data)
+      setEditMode(false)
       setEditForm({
-        nombre: data.nombre || "",
-        apellido: data.apellido || "",
-        email: data.email || "",
-        edad: data.edad ?? "",
-        sexo: data.sexo || "",
-      });
+        nombre: data.nombre || '',
+        apellido: data.apellido || '',
+        email: data.email || '',
+        edad: data.edad ?? '',
+        sexo: data.sexo || ''
+      })
     } catch (error) {
-      toast.error("Error cargando detalle del usuario");
+      toast.error('Error cargando detalle del usuario')
     } finally {
-      setSelectedUserLoading(false);
+      setSelectedUserLoading(false)
     }
-  };
+  }
 
   const closeUserModal = () => {
-    setSelectedUserId(null);
-    setSelectedUser(null);
-    setEditMode(false);
-  };
+    setSelectedUserId(null)
+    setSelectedUser(null)
+    setEditMode(false)
+  }
 
   const saveUser = async () => {
-    if (!selectedUser?._id) return;
+    if (!selectedUser?._id) return
     try {
-      setSavingUser(true);
-      const payload = {};
-      if (editForm.nombre) payload.nombre = editForm.nombre;
-      if (editForm.apellido) payload.apellido = editForm.apellido;
-      if (editForm.email) payload.email = editForm.email;
-      if (editForm.edad !== "" && editForm.edad != null) payload.edad = Number(editForm.edad);
-      if (editForm.sexo) payload.sexo = editForm.sexo;
+      setSavingUser(true)
+      const payload = {}
+      if (editForm.nombre) payload.nombre = editForm.nombre
+      if (editForm.apellido) payload.apellido = editForm.apellido
+      if (editForm.email) payload.email = editForm.email
+      if (editForm.edad !== '' && editForm.edad != null)
+        payload.edad = Number(editForm.edad)
+      if (editForm.sexo) payload.sexo = editForm.sexo
 
-      const res = await adminAPI.updateUser(selectedUser._id, payload);
-      toast.success(res.message || "Usuario actualizado");
-      await loadUsers();
-      await loadUserDetail(selectedUser._id);
-      setEditMode(false);
+      const res = await adminAPI.updateUser(selectedUser._id, payload)
+      toast.success(res.message || 'Usuario actualizado')
+      await loadUsers()
+      await loadUserDetail(selectedUser._id)
+      setEditMode(false)
     } catch (error) {
       const msg =
-        error.response?.data?.errors?.map((e) => e.msg).join(" | ") ||
+        error.response?.data?.errors?.map(e => e.msg).join(' | ') ||
         error.response?.data?.message ||
-        "Error actualizando usuario";
-      toast.error(msg);
+        'Error actualizando usuario'
+      toast.error(msg)
     } finally {
-      setSavingUser(false);
+      setSavingUser(false)
     }
-  };
+  }
 
   const deleteUser = async () => {
-    if (!selectedUser?._id) return;
-    const name = `${selectedUser.nombre || ""} ${selectedUser.apellido || ""}`.trim() || selectedUser.email;
+    if (!selectedUser?._id) return
+    const name =
+      `${selectedUser.nombre || ''} ${selectedUser.apellido || ''}`.trim() ||
+      selectedUser.email
     const ok = window.confirm(
       `¿Eliminar al usuario "${name}"?\n\nEsto también eliminará sus baches y comentarios asociados.`
-    );
-    if (!ok) return;
+    )
+    if (!ok) return
 
     try {
-      setSavingUser(true);
-      const res = await adminAPI.deleteUser(selectedUser._id);
-      toast.success(res.message || "Usuario eliminado");
-      closeUserModal();
-      await loadUsers();
+      setSavingUser(true)
+      const res = await adminAPI.deleteUser(selectedUser._id)
+      toast.success(res.message || 'Usuario eliminado')
+      closeUserModal()
+      await loadUsers()
     } catch (error) {
-      toast.error(error.response?.data?.message || "Error eliminando usuario");
+      toast.error(error.response?.data?.message || 'Error eliminando usuario')
     } finally {
-      setSavingUser(false);
+      setSavingUser(false)
     }
-  };
+  }
 
   const handleEstadoChange = async (bacheId, nuevoEstado) => {
     try {
-      const response = await fetch(`${import.meta.env.VITE_API_URL || "http://localhost:3001/api"}/baches/${bacheId}/estado`, {
-        method: "PATCH",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${localStorage.getItem("token")}`,
-        },
-        body: JSON.stringify({ estado: nuevoEstado }),
-      });
-
-      if (response.ok) {
-        toast.success("Estado actualizado");
-        loadBaches();
-        loadStats();
-      } else {
-        toast.error("Error al actualizar estado");
-      }
+      await bachesAPI.changeEstado(bacheId, nuevoEstado)
+      toast.success('Estado actualizado')
+      loadBaches()
+      loadStats()
     } catch (error) {
-      toast.error("Error al actualizar estado");
+      toast.error('Error al actualizar estado')
     }
-  };
+  }
 
   useEffect(() => {
-    loadStats();
-  }, []);
+    loadStats()
+  }, [])
 
   useEffect(() => {
-    if (activeTab === "baches") loadBaches();
-  }, [activeTab, filters]);
+    if (activeTab === 'baches') loadBaches()
+  }, [activeTab, filters])
 
   useEffect(() => {
-    if (activeTab === "por-validar") loadPendientes();
-  }, [activeTab]);
+    if (activeTab === 'por-validar') loadPendientes()
+  }, [activeTab])
 
   useEffect(() => {
-    if (activeTab === "usuarios") loadUsers();
-  }, [activeTab, userFilters]);
+    if (activeTab === 'usuarios') loadUsers()
+  }, [activeTab, userFilters])
 
   useEffect(() => {
-    if (selectedUserId) loadUserDetail(selectedUserId);
-  }, [selectedUserId]);
+    if (selectedUserId) loadUserDetail(selectedUserId)
+  }, [selectedUserId])
 
   const bachesChart = useMemo(() => {
-    if (!stats?.baches) return null;
-    const total = stats.baches.total || 0;
+    if (!stats?.baches) return null
+    const total = stats.baches.total || 0
     const items = [
-      { label: "Reportados", value: stats.baches.reportados || 0, color: "#e67e22" },
-      { label: "En proceso", value: stats.baches.enProceso || 0, color: "#3498db" },
-      { label: "Solucionados", value: stats.baches.solucionados || 0, color: "#27ae60" },
-    ];
-    return { total, items };
-  }, [stats]);
+      {
+        label: 'Reportados',
+        value: stats.baches.reportados || 0,
+        color: '#e67e22'
+      },
+      {
+        label: 'En proceso',
+        value: stats.baches.enProceso || 0,
+        color: '#3498db'
+      },
+      {
+        label: 'Solucionados',
+        value: stats.baches.solucionados || 0,
+        color: '#27ae60'
+      }
+    ]
+    return { total, items }
+  }, [stats])
 
   if (loading && !stats) {
     return (
-      <div className="admin-panel-container">
+      <div className='admin-panel-container'>
         <Loading />
       </div>
-    );
+    )
   }
 
   return (
-    <div className="admin-panel-container">
+    <div className='admin-panel-container'>
       <h1>Panel de Administración</h1>
 
-      <div className="admin-tabs">
+      <div className='admin-tabs'>
         <button
-          className={activeTab === "dashboard" ? "tab active" : "tab"}
-          onClick={() => setActiveTab("dashboard")}
+          className={activeTab === 'dashboard' ? 'tab active' : 'tab'}
+          onClick={() => setActiveTab('dashboard')}
         >
           Dashboard
         </button>
         <button
-          className={activeTab === "por-validar" ? "tab active" : "tab"}
-          onClick={() => setActiveTab("por-validar")}
+          className={activeTab === 'por-validar' ? 'tab active' : 'tab'}
+          onClick={() => setActiveTab('por-validar')}
         >
           Por validar
           {stats?.baches?.pendientesModeracion > 0 && (
-            <span className="tab-badge">{stats.baches.pendientesModeracion}</span>
+            <span className='tab-badge'>
+              {stats.baches.pendientesModeracion}
+            </span>
           )}
         </button>
-        <button className={activeTab === "baches" ? "tab active" : "tab"} onClick={() => setActiveTab("baches")}>
+        <button
+          className={activeTab === 'baches' ? 'tab active' : 'tab'}
+          onClick={() => setActiveTab('baches')}
+        >
           Baches
         </button>
         <button
-          className={activeTab === "usuarios" ? "tab active" : "tab"}
-          onClick={() => setActiveTab("usuarios")}
+          className={activeTab === 'usuarios' ? 'tab active' : 'tab'}
+          onClick={() => setActiveTab('usuarios')}
         >
           Usuarios
         </button>
       </div>
 
-      {activeTab === "dashboard" && (
-        <div className="admin-section">
+      {activeTab === 'dashboard' && (
+        <div className='admin-section'>
           {stats && (
             <>
-              <div className="admin-stats">
-                <div className="stat-card">
+              <div className='admin-stats'>
+                <div className='stat-card'>
                   <h3>Total Baches</h3>
-                  <p className="stat-number">{stats.baches?.total ?? 0}</p>
+                  <p className='stat-number'>{stats.baches?.total ?? 0}</p>
                 </div>
-                <div className="stat-card stat-card-pendientes">
+                <div className='stat-card stat-card-pendientes'>
                   <h3>Pendientes de validación</h3>
-                  <p className="stat-number">{stats.baches?.pendientesModeracion ?? 0}</p>
+                  <p className='stat-number'>
+                    {stats.baches?.pendientesModeracion ?? 0}
+                  </p>
                 </div>
-                <div className="stat-card">
+                <div className='stat-card'>
                   <h3>Total Usuarios</h3>
-                  <p className="stat-number">{stats.usuarios?.total ?? 0}</p>
+                  <p className='stat-number'>{stats.usuarios?.total ?? 0}</p>
                 </div>
-                <div className="stat-card">
+                <div className='stat-card'>
                   <h3>Total Comentarios</h3>
-                  <p className="stat-number">{stats.comentarios?.total ?? 0}</p>
+                  <p className='stat-number'>{stats.comentarios?.total ?? 0}</p>
                 </div>
-                <div className="stat-card">
+                <div className='stat-card'>
                   <h3>Tiempo Promedio</h3>
-                  <p className="stat-number">{stats.baches?.tiempoPromedioSolucion ?? 0} días</p>
+                  <p className='stat-number'>
+                    {stats.baches?.tiempoPromedioSolucion ?? 0} días
+                  </p>
                 </div>
               </div>
 
               {bachesChart && (
-                <div className="chart-card">
+                <div className='chart-card'>
                   <h2>Baches por estado</h2>
-                  <div className="bar-chart">
-                    {bachesChart.items.map((it) => {
-                      const pct = bachesChart.total > 0 ? Math.round((it.value / bachesChart.total) * 100) : 0;
+                  <div className='bar-chart'>
+                    {bachesChart.items.map(it => {
+                      const pct =
+                        bachesChart.total > 0
+                          ? Math.round((it.value / bachesChart.total) * 100)
+                          : 0
                       return (
-                        <div key={it.label} className="bar-row">
-                          <div className="bar-label">{it.label}</div>
-                          <div className="bar-track">
-                            <div className="bar-fill" style={{ width: `${pct}%`, background: it.color }} />
+                        <div key={it.label} className='bar-row'>
+                          <div className='bar-label'>{it.label}</div>
+                          <div className='bar-track'>
+                            <div
+                              className='bar-fill'
+                              style={{ width: `${pct}%`, background: it.color }}
+                            />
                           </div>
-                          <div className="bar-value">
+                          <div className='bar-value'>
                             {it.value} ({pct}%)
                           </div>
                         </div>
-                      );
+                      )
                     })}
                   </div>
                 </div>
@@ -340,66 +363,78 @@ const AdminPanel = () => {
         </div>
       )}
 
-      {activeTab === "por-validar" && (
-        <div className="admin-por-validar admin-section">
+      {activeTab === 'por-validar' && (
+        <div className='admin-por-validar admin-section'>
           <h2>Validar reportes (imágenes y contenido)</h2>
-          <p className="admin-por-validar-desc">
-            Revisá las imágenes y el contenido antes de aprobar. Solo los baches aprobados serán visibles para todos.
+          <p className='admin-por-validar-desc'>
+            Revisá las imágenes y el contenido antes de aprobar. Solo los baches
+            aprobados serán visibles para todos.
           </p>
           {pendientesLoading ? (
             <Loading />
           ) : bachesPendientes.length === 0 ? (
-            <p className="empty-state">No hay solicitudes pendientes de validación.</p>
+            <p className='empty-state'>
+              No hay solicitudes pendientes de validación.
+            </p>
           ) : (
-            <div className="admin-pendientes-list">
-              {bachesPendientes.map((bache) => {
-                const baseUrl = (import.meta.env.VITE_API_URL || "http://localhost:3001/api").replace("/api", "");
+            <div className='admin-pendientes-list'>
+              {bachesPendientes.map(bache => {
+                const baseUrl = (
+                  import.meta.env.VITE_API_URL || 'http://localhost:3001/api'
+                ).replace('/api', '')
                 return (
-                  <div key={bache._id} className="admin-pendiente-card">
-                    <div className="admin-pendiente-imagenes">
+                  <div key={bache._id} className='admin-pendiente-card'>
+                    <div className='admin-pendiente-imagenes'>
                       {(bache.imagenes || []).map((img, i) => (
                         <a
                           key={i}
                           href={`${baseUrl}${img}`}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="admin-pendiente-img-link"
+                          target='_blank'
+                          rel='noopener noreferrer'
+                          className='admin-pendiente-img-link'
                         >
                           <img
                             src={`${baseUrl}${img}`}
                             alt={`Imagen ${i + 1}`}
-                            className="admin-pendiente-img"
+                            className='admin-pendiente-img'
                           />
                         </a>
                       ))}
                     </div>
-                    <div className="admin-pendiente-info">
-                      <h3>{bache.titulo || "Sin título"}</h3>
+                    <div className='admin-pendiente-info'>
+                      <h3>{bache.titulo || 'Sin título'}</h3>
                       <p>{bache.descripcion}</p>
-                      <p className="admin-pendiente-direccion">
-                        📍 {bache.ubicacion?.direccion || "Sin dirección"}
+                      <p className='admin-pendiente-direccion'>
+                        📍 {bache.ubicacion?.direccion || 'Sin dirección'}
                       </p>
-                      <p className="admin-pendiente-meta">
+                      <p className='admin-pendiente-meta'>
                         {bache.fechaReporte
-                          ? new Date(bache.fechaReporte).toLocaleDateString("es-AR")
-                          : "Sin fecha"}
+                          ? new Date(bache.fechaReporte).toLocaleDateString(
+                              'es-AR'
+                            )
+                          : 'Sin fecha'}
                         {bache.reportadoPor && (
-                          <> · Reportado por: {bache.reportadoPor.nombre || bache.reportadoPor.email}</>
+                          <>
+                            {' '}
+                            · Reportado por:{' '}
+                            {bache.reportadoPor.nombre ||
+                              bache.reportadoPor.email}
+                          </>
                         )}
                       </p>
                     </div>
-                    <div className="admin-pendiente-actions">
+                    <div className='admin-pendiente-actions'>
                       <button
-                        type="button"
-                        className="btn btn-approve"
+                        type='button'
+                        className='btn btn-approve'
                         onClick={() => handleAprobarBache(bache._id)}
                         disabled={accionandoId === bache._id}
                       >
-                        {accionandoId === bache._id ? "..." : "Aprobar"}
+                        {accionandoId === bache._id ? '...' : 'Aprobar'}
                       </button>
                       <button
-                        type="button"
-                        className="btn btn-reject"
+                        type='button'
+                        className='btn btn-reject'
                         onClick={() => handleRechazarBache(bache._id)}
                         disabled={accionandoId === bache._id}
                       >
@@ -407,19 +442,24 @@ const AdminPanel = () => {
                       </button>
                     </div>
                   </div>
-                );
+                )
               })}
             </div>
           )}
         </div>
       )}
 
-      {activeTab === "baches" && (
-        <div className="admin-baches admin-section">
+      {activeTab === 'baches' && (
+        <div className='admin-baches admin-section'>
           <h2>Gestión de Baches</h2>
-          <div className="admin-filters">
-            <select value={filters.estado} onChange={(e) => setFilters({ ...filters, estado: e.target.value, page: 1 })}>
-              <option value="">Todos los estados</option>
+          <div className='admin-filters'>
+            <select
+              value={filters.estado}
+              onChange={e =>
+                setFilters({ ...filters, estado: e.target.value, page: 1 })
+              }
+            >
+              <option value=''>Todos los estados</option>
               <option value={ESTADOS_BACHE.REPORTADO}>Reportados</option>
               <option value={ESTADOS_BACHE.EN_PROCESO}>En Proceso</option>
               <option value={ESTADOS_BACHE.SOLUCIONADO}>Solucionados</option>
@@ -430,21 +470,27 @@ const AdminPanel = () => {
             <Loading />
           ) : (
             <>
-              <div className="admin-baches-list">
-                {baches.map((bache) => (
-                  <div key={bache._id} className="admin-bache-item">
-                    <div className="admin-bache-info">
-                      <h3>{bache.titulo || "Sin título"}</h3>
-                      <p>{bache.ubicacion?.direccion || "Sin dirección"}</p>
-                      <p className="admin-bache-date">
-                        {bache.fechaReporte ? new Date(bache.fechaReporte).toLocaleDateString("es-AR") : "Sin fecha"}
+              <div className='admin-baches-list'>
+                {baches.map(bache => (
+                  <div key={bache._id} className='admin-bache-item'>
+                    <div className='admin-bache-info'>
+                      <h3>{bache.titulo || 'Sin título'}</h3>
+                      <p>{bache.ubicacion?.direccion || 'Sin dirección'}</p>
+                      <p className='admin-bache-date'>
+                        {bache.fechaReporte
+                          ? new Date(bache.fechaReporte).toLocaleDateString(
+                              'es-AR'
+                            )
+                          : 'Sin fecha'}
                       </p>
                     </div>
-                    <div className="admin-bache-actions">
+                    <div className='admin-bache-actions'>
                       <select
                         value={bache.estado}
-                        onChange={(e) => handleEstadoChange(bache._id, e.target.value)}
-                        className="estado-select"
+                        onChange={e =>
+                          handleEstadoChange(bache._id, e.target.value)
+                        }
+                        className='estado-select'
                       >
                         {Object.entries(ESTADOS_LABELS).map(([key, label]) => (
                           <option key={key} value={key}>
@@ -458,21 +504,25 @@ const AdminPanel = () => {
               </div>
 
               {bachesPagination && (
-                <div className="pagination">
+                <div className='pagination'>
                   <button
-                    className="btn"
+                    className='btn'
                     disabled={filters.page <= 1}
-                    onClick={() => setFilters((p) => ({ ...p, page: Math.max(1, p.page - 1) }))}
+                    onClick={() =>
+                      setFilters(p => ({ ...p, page: Math.max(1, p.page - 1) }))
+                    }
                   >
                     Anterior
                   </button>
-                  <span className="page-info">
+                  <span className='page-info'>
                     Página {bachesPagination.page} de {bachesPagination.pages}
                   </span>
                   <button
-                    className="btn"
+                    className='btn'
                     disabled={bachesPagination.page >= bachesPagination.pages}
-                    onClick={() => setFilters((p) => ({ ...p, page: p.page + 1 }))}
+                    onClick={() =>
+                      setFilters(p => ({ ...p, page: p.page + 1 }))
+                    }
                   >
                     Siguiente
                   </button>
@@ -483,20 +533,27 @@ const AdminPanel = () => {
         </div>
       )}
 
-      {activeTab === "usuarios" && (
-        <div className="admin-users admin-section">
+      {activeTab === 'usuarios' && (
+        <div className='admin-users admin-section'>
           <h2>Gestión de Usuarios</h2>
-          <div className="admin-filters users-filters">
+          <div className='admin-filters users-filters'>
             <input
-              type="text"
-              placeholder="Buscar por nombre, apellido o email"
+              type='text'
+              placeholder='Buscar por nombre, apellido o email'
               value={userFilters.search}
-              onChange={(e) => setUserFilters((p) => ({ ...p, search: e.target.value, page: 1 }))}
+              onChange={e =>
+                setUserFilters(p => ({ ...p, search: e.target.value, page: 1 }))
+              }
             />
-            <select value={userFilters.rol} onChange={(e) => setUserFilters((p) => ({ ...p, rol: e.target.value, page: 1 }))}>
-              <option value="">Todos los roles</option>
-              <option value="usuario">Usuario</option>
-              <option value="admin">Admin</option>
+            <select
+              value={userFilters.rol}
+              onChange={e =>
+                setUserFilters(p => ({ ...p, rol: e.target.value, page: 1 }))
+              }
+            >
+              <option value=''>Todos los roles</option>
+              <option value='usuario'>Usuario</option>
+              <option value='admin'>Admin</option>
             </select>
           </div>
 
@@ -504,8 +561,8 @@ const AdminPanel = () => {
             <Loading />
           ) : (
             <>
-              <div className="table-wrap">
-                <table className="admin-table">
+              <div className='table-wrap'>
+                <table className='admin-table'>
                   <thead>
                     <tr>
                       <th>Nombre</th>
@@ -519,22 +576,36 @@ const AdminPanel = () => {
                   <tbody>
                     {users.length === 0 ? (
                       <tr>
-                        <td colSpan={6} className="empty">
+                        <td colSpan={6} className='empty'>
                           No hay usuarios para mostrar
                         </td>
                       </tr>
                     ) : (
-                      users.map((u) => (
+                      users.map(u => (
                         <tr key={u._id}>
-                          <td>{`${u.nombre || ""} ${u.apellido || ""}`.trim() || "-"}</td>
+                          <td>
+                            {`${u.nombre || ''} ${u.apellido || ''}`.trim() ||
+                              '-'}
+                          </td>
                           <td>{u.email}</td>
                           <td>
-                            <span className={u.rol === "admin" ? "badge badge-admin" : "badge"}>{u.rol}</span>
+                            <span
+                              className={
+                                u.rol === 'admin'
+                                  ? 'badge badge-admin'
+                                  : 'badge'
+                              }
+                            >
+                              {u.rol}
+                            </span>
                           </td>
                           <td>{u.totalBaches ?? 0}</td>
                           <td>{u.totalComentarios ?? 0}</td>
-                          <td style={{ textAlign: "right" }}>
-                            <button className="btn btn-secondary" onClick={() => setSelectedUserId(u._id)}>
+                          <td style={{ textAlign: 'right' }}>
+                            <button
+                              className='btn btn-secondary'
+                              onClick={() => setSelectedUserId(u._id)}
+                            >
                               Ver / editar
                             </button>
                           </td>
@@ -546,21 +617,28 @@ const AdminPanel = () => {
               </div>
 
               {usersPagination && (
-                <div className="pagination">
+                <div className='pagination'>
                   <button
-                    className="btn"
+                    className='btn'
                     disabled={userFilters.page <= 1}
-                    onClick={() => setUserFilters((p) => ({ ...p, page: Math.max(1, p.page - 1) }))}
+                    onClick={() =>
+                      setUserFilters(p => ({
+                        ...p,
+                        page: Math.max(1, p.page - 1)
+                      }))
+                    }
                   >
                     Anterior
                   </button>
-                  <span className="page-info">
+                  <span className='page-info'>
                     Página {usersPagination.page} de {usersPagination.pages}
                   </span>
                   <button
-                    className="btn"
+                    className='btn'
                     disabled={usersPagination.page >= usersPagination.pages}
-                    onClick={() => setUserFilters((p) => ({ ...p, page: p.page + 1 }))}
+                    onClick={() =>
+                      setUserFilters(p => ({ ...p, page: p.page + 1 }))
+                    }
                   >
                     Siguiente
                   </button>
@@ -570,11 +648,15 @@ const AdminPanel = () => {
           )}
 
           {selectedUserId && (
-            <div className="modal-backdrop" onMouseDown={closeUserModal}>
-              <div className="modal" onMouseDown={(e) => e.stopPropagation()}>
-                <div className="modal-header">
+            <div className='modal-backdrop' onMouseDown={closeUserModal}>
+              <div className='modal' onMouseDown={e => e.stopPropagation()}>
+                <div className='modal-header'>
                   <h3>Detalle de usuario</h3>
-                  <button className="icon-btn" onClick={closeUserModal} aria-label="Cerrar">
+                  <button
+                    className='icon-btn'
+                    onClick={closeUserModal}
+                    aria-label='Cerrar'
+                  >
                     ✕
                   </button>
                 </div>
@@ -583,120 +665,200 @@ const AdminPanel = () => {
                   <Loading />
                 ) : (
                   <>
-                    <div className="modal-body">
-                      <div className="user-meta">
+                    <div className='modal-body'>
+                      <div className='user-meta'>
                         <div>
-                          <div className="muted">ID</div>
-                          <div className="mono">{selectedUser._id}</div>
+                          <div className='muted'>ID</div>
+                          <div className='mono'>{selectedUser._id}</div>
                         </div>
                         <div>
-                          <div className="muted">Rol</div>
+                          <div className='muted'>Rol</div>
                           <div>
-                            <span className={selectedUser.rol === "admin" ? "badge badge-admin" : "badge"}>
+                            <span
+                              className={
+                                selectedUser.rol === 'admin'
+                                  ? 'badge badge-admin'
+                                  : 'badge'
+                              }
+                            >
                               {selectedUser.rol}
                             </span>
                           </div>
                         </div>
                         <div>
-                          <div className="muted">Registrado</div>
-                          <div>{new Date(selectedUser.fechaRegistro || selectedUser.createdAt).toLocaleString("es-AR")}</div>
+                          <div className='muted'>Registrado</div>
+                          <div>
+                            {new Date(
+                              selectedUser.fechaRegistro ||
+                                selectedUser.createdAt
+                            ).toLocaleString('es-AR')}
+                          </div>
                         </div>
                       </div>
 
-                      <div className="modal-actions">
-                        <button className="btn btn-secondary" onClick={() => setEditMode((v) => !v)}>
-                          {editMode ? "Cancelar edición" : "Editar"}
+                      <div className='modal-actions'>
+                        <button
+                          className='btn btn-secondary'
+                          onClick={() => setEditMode(v => !v)}
+                        >
+                          {editMode ? 'Cancelar edición' : 'Editar'}
                         </button>
-                        <button className="btn btn-danger" onClick={deleteUser} disabled={savingUser}>
-                          {savingUser ? "Eliminando..." : "Eliminar usuario"}
+                        <button
+                          className='btn btn-danger'
+                          onClick={deleteUser}
+                          disabled={savingUser}
+                        >
+                          {savingUser ? 'Eliminando...' : 'Eliminar usuario'}
                         </button>
                       </div>
 
                       {editMode ? (
-                        <div className="form-grid">
-                          <div className="field">
+                        <div className='form-grid'>
+                          <div className='field'>
                             <label>Nombre</label>
-                            <input value={editForm.nombre} onChange={(e) => setEditForm((p) => ({ ...p, nombre: e.target.value }))} />
+                            <input
+                              value={editForm.nombre}
+                              onChange={e =>
+                                setEditForm(p => ({
+                                  ...p,
+                                  nombre: e.target.value
+                                }))
+                              }
+                            />
                           </div>
-                          <div className="field">
+                          <div className='field'>
                             <label>Apellido</label>
                             <input
                               value={editForm.apellido}
-                              onChange={(e) => setEditForm((p) => ({ ...p, apellido: e.target.value }))}
+                              onChange={e =>
+                                setEditForm(p => ({
+                                  ...p,
+                                  apellido: e.target.value
+                                }))
+                              }
                             />
                           </div>
-                          <div className="field">
+                          <div className='field'>
                             <label>Email</label>
-                            <input value={editForm.email} onChange={(e) => setEditForm((p) => ({ ...p, email: e.target.value }))} />
+                            <input
+                              value={editForm.email}
+                              onChange={e =>
+                                setEditForm(p => ({
+                                  ...p,
+                                  email: e.target.value
+                                }))
+                              }
+                            />
                           </div>
-                          <div className="field">
+                          <div className='field'>
                             <label>Edad</label>
                             <input
-                              type="number"
-                              min="13"
-                              max="120"
+                              type='number'
+                              min='13'
+                              max='120'
                               value={editForm.edad}
-                              onChange={(e) => setEditForm((p) => ({ ...p, edad: e.target.value }))}
+                              onChange={e =>
+                                setEditForm(p => ({
+                                  ...p,
+                                  edad: e.target.value
+                                }))
+                              }
                             />
                           </div>
-                          <div className="field">
+                          <div className='field'>
                             <label>Sexo</label>
-                            <select value={editForm.sexo} onChange={(e) => setEditForm((p) => ({ ...p, sexo: e.target.value }))}>
-                              <option value="">(sin cambios)</option>
-                              <option value="masculino">Masculino</option>
-                              <option value="femenino">Femenino</option>
-                              <option value="otro">Otro</option>
-                              <option value="prefiero no decir">Prefiero no decir</option>
+                            <select
+                              value={editForm.sexo}
+                              onChange={e =>
+                                setEditForm(p => ({
+                                  ...p,
+                                  sexo: e.target.value
+                                }))
+                              }
+                            >
+                              <option value=''>(sin cambios)</option>
+                              <option value='masculino'>Masculino</option>
+                              <option value='femenino'>Femenino</option>
+                              <option value='otro'>Otro</option>
+                              <option value='prefiero no decir'>
+                                Prefiero no decir
+                              </option>
                             </select>
                           </div>
-                          <div className="field" />
-                          <div className="field">
-                            <button className="btn" onClick={saveUser} disabled={savingUser}>
-                              {savingUser ? "Guardando..." : "Guardar cambios"}
+                          <div className='field' />
+                          <div className='field'>
+                            <button
+                              className='btn'
+                              onClick={saveUser}
+                              disabled={savingUser}
+                            >
+                              {savingUser ? 'Guardando...' : 'Guardar cambios'}
                             </button>
                           </div>
                         </div>
                       ) : (
-                        <div className="stats-grid">
-                          <div className="stat-mini">
-                            <div className="muted">Baches</div>
-                            <div className="big">{selectedUser.estadisticas?.totalBaches ?? 0}</div>
+                        <div className='stats-grid'>
+                          <div className='stat-mini'>
+                            <div className='muted'>Baches</div>
+                            <div className='big'>
+                              {selectedUser.estadisticas?.totalBaches ?? 0}
+                            </div>
                           </div>
-                          <div className="stat-mini">
-                            <div className="muted">Comentarios</div>
-                            <div className="big">{selectedUser.estadisticas?.totalComentarios ?? 0}</div>
+                          <div className='stat-mini'>
+                            <div className='muted'>Comentarios</div>
+                            <div className='big'>
+                              {selectedUser.estadisticas?.totalComentarios ?? 0}
+                            </div>
                           </div>
-                          <div className="stat-mini">
-                            <div className="muted">Reportados</div>
-                            <div className="big">{selectedUser.estadisticas?.bachesPorEstado?.reportados ?? 0}</div>
+                          <div className='stat-mini'>
+                            <div className='muted'>Reportados</div>
+                            <div className='big'>
+                              {selectedUser.estadisticas?.bachesPorEstado
+                                ?.reportados ?? 0}
+                            </div>
                           </div>
-                          <div className="stat-mini">
-                            <div className="muted">En proceso</div>
-                            <div className="big">{selectedUser.estadisticas?.bachesPorEstado?.enProceso ?? 0}</div>
+                          <div className='stat-mini'>
+                            <div className='muted'>En proceso</div>
+                            <div className='big'>
+                              {selectedUser.estadisticas?.bachesPorEstado
+                                ?.enProceso ?? 0}
+                            </div>
                           </div>
-                          <div className="stat-mini">
-                            <div className="muted">Solucionados</div>
-                            <div className="big">{selectedUser.estadisticas?.bachesPorEstado?.solucionados ?? 0}</div>
+                          <div className='stat-mini'>
+                            <div className='muted'>Solucionados</div>
+                            <div className='big'>
+                              {selectedUser.estadisticas?.bachesPorEstado
+                                ?.solucionados ?? 0}
+                            </div>
                           </div>
                         </div>
                       )}
 
-                      {!editMode && selectedUser.estadisticas?.ultimosBaches?.length > 0 && (
-                        <div className="recent">
-                          <h4>Últimos baches</h4>
-                          <ul>
-                            {selectedUser.estadisticas.ultimosBaches.map((b) => (
-                              <li key={b._id}>
-                                <span className="recent-title">{b.titulo}</span>
-                                <span className="recent-meta">
-                                  {ESTADOS_LABELS[b.estado] || b.estado} · {new Date(b.fechaReporte).toLocaleDateString("es-AR")} ·{" "}
-                                  {b.totalVotos} votos
-                                </span>
-                              </li>
-                            ))}
-                          </ul>
-                        </div>
-                      )}
+                      {!editMode &&
+                        selectedUser.estadisticas?.ultimosBaches?.length >
+                          0 && (
+                          <div className='recent'>
+                            <h4>Últimos baches</h4>
+                            <ul>
+                              {selectedUser.estadisticas.ultimosBaches.map(
+                                b => (
+                                  <li key={b._id}>
+                                    <span className='recent-title'>
+                                      {b.titulo}
+                                    </span>
+                                    <span className='recent-meta'>
+                                      {ESTADOS_LABELS[b.estado] || b.estado} ·{' '}
+                                      {new Date(
+                                        b.fechaReporte
+                                      ).toLocaleDateString('es-AR')}{' '}
+                                      · {b.totalVotos} votos
+                                    </span>
+                                  </li>
+                                )
+                              )}
+                            </ul>
+                          </div>
+                        )}
                     </div>
                   </>
                 )}
@@ -706,8 +868,7 @@ const AdminPanel = () => {
         </div>
       )}
     </div>
-  );
-};
+  )
+}
 
-export default AdminPanel;
-
+export default AdminPanel

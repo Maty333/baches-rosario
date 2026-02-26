@@ -15,11 +15,22 @@ const BacheDetail = () => {
   const [bache, setBache] = useState(null);
   const [loading, setLoading] = useState(true);
   const [votando, setVotando] = useState(false);
-  const { isAuthenticated } = useAuth();
+  const [nuevoEstado, setNuevoEstado] = useState("");
+  const [pruebas, setPruebas] = useState([]);
+  const [sendingEstado, setSendingEstado] = useState(false);
+  const { isAuthenticated, user } = useAuth();
 
   useEffect(() => {
     loadBache();
   }, [id]);
+
+  // cuando cambia el bache recargado, reiniciamos el formulario de estado
+  useEffect(() => {
+    if (bache) {
+      setNuevoEstado(bache.estado);
+      setPruebas([]);
+    }
+  }, [bache]);
 
   const loadBache = async () => {
     try {
@@ -54,6 +65,26 @@ const BacheDetail = () => {
       toast.error("Error al votar");
     } finally {
       setVotando(false);
+    }
+  };
+
+  const handleEstadoSubmit = async () => {
+    if (!nuevoEstado) return;
+
+    if (user?.rol !== "admin" && pruebas.length === 0) {
+      toast.error("Se requieren imágenes de prueba");
+      return;
+    }
+
+    try {
+      setSendingEstado(true);
+      await bachesAPI.changeEstado(id, nuevoEstado, pruebas);
+      toast.success("Estado actualizado");
+      await loadBache();
+    } catch (error) {
+      toast.error("Error al cambiar estado");
+    } finally {
+      setSendingEstado(false);
     }
   };
 
@@ -128,6 +159,45 @@ const BacheDetail = () => {
             Reportado por: {bache.reportadoPor?.nombre || "Anónimo"}
           </p>
         </div>
+
+        {/* formulario de cambio de estado (autor o admin) */}
+        {(user?.rol === "admin" || user?._id === bache.reportadoPor?._id) && (
+          <div className="bache-detail-estado-form">
+            <h3>Cambiar estado</h3>
+            <select
+              value={nuevoEstado}
+              onChange={(e) => setNuevoEstado(e.target.value)}
+            >
+              {Object.entries(ESTADOS_LABELS).map(([key, label]) => (
+                <option key={key} value={key}>
+                  {label}
+                </option>
+              ))}
+            </select>
+
+            {/* los usuarios normales deben adjuntar al menos una imagen */}
+            {user?.rol !== "admin" && (
+              <>
+                <p>Subí una o más imágenes de prueba</p>
+                <input
+                  type="file"
+                  accept="image/*"
+                  multiple
+                  onChange={(e) => setPruebas(Array.from(e.target.files))}
+                />
+                {pruebas.length > 0 && <p>{pruebas.length} archivo(s) seleccionado(s)</p>}
+              </>
+            )}
+
+            <button
+              onClick={handleEstadoSubmit}
+              disabled={sendingEstado}
+              className="update-estado-button"
+            >
+              {sendingEstado ? "Actualizando..." : "Actualizar estado"}
+            </button>
+          </div>
+        )}
 
         <CommentSection bacheId={id} />
       </div>

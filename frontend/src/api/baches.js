@@ -67,5 +67,21 @@ export const bachesAPI = {
     const response = await api.post(`/baches/${id}/votar`);
     return response.data;
   },
+
+  changeEstado: async (id, estado, images = []) => {
+    // si hay imágenes, enviamos multipart/form-data
+    if (images && images.length > 0) {
+      const formData = new FormData();
+      formData.append("estado", estado);
+      images.forEach((img) => formData.append("imagenes", img));
+      const response = await api.patch(`/baches/${id}/estado`, formData, {
+        headers: { "Content-Type": "multipart/form-data" },
+      });
+      return response.data;
+    } else {
+      const response = await api.patch(`/baches/${id}/estado`, { estado });
+      return response.data;
+    }
+  },
 };
 
