@@ -104,13 +104,17 @@ El sistema utiliza WebSockets para:
 
 ## 🔐 Variables de Entorno
 
-El backend requiere un archivo `.env` con las siguientes variables:
+Copiá `backend/.env.example` a `backend/.env` y ajustá valores. El **puerto por defecto del API es 3001** (alineado con el frontend).
 
-PORT=3000
+Variables principales del backend:
+
+PORT=3001
 MONGODB_URI=mongodb://localhost:27017/baches-rosario
 JWT_SECRET=tu_clave_secreta
 NODE_ENV=development
 FRONTEND_URL=http://localhost:5173
+
+Opcional: `frontend/.env.example` → `frontend/.env` si querés sobreescribir `VITE_API_URL` / `VITE_SOCKET_URL`.
 
 
 ---
@@ -135,7 +139,7 @@ npm run dev
 ---
 
 ## 🔮 Mejoras Futuras
-- OAuth (Google Login)  
+- Pulir OAuth Google (flujo ya integrado en código)  
 - Notificaciones push  
 - Aplicación móvil  
 - Moderación automática con IA  

@@ -47,7 +47,7 @@ export const register = async (req, res) => {
     await user.save()
 
     const baseUrl =
-      process.env.BACKEND_URL || `http://localhost:${process.env.PORT || 3000}`
+      process.env.BACKEND_URL || `http://localhost:${process.env.PORT || 3001}`
     const verificationUrl = `${baseUrl}/api/auth/verify-email?token=${verificationToken}`
 
     await sendVerificationEmail(email, nombre, verificationUrl)
