@@ -62,14 +62,8 @@ const getBachesQueryValidation = [
     .optional()
     .isIn(["reportado", "en_proceso", "solucionado"])
     .withMessage("Estado inválido"),
-  query("lat")
-    .optional()
-    .isFloat()
-    .withMessage("Latitud debe ser un número"),
-  query("lng")
-    .optional()
-    .isFloat()
-    .withMessage("Longitud debe ser un número"),
+  query("lat").optional().isFloat().withMessage("Latitud debe ser un número"),
+  query("lng").optional().isFloat().withMessage("Longitud debe ser un número"),
   query("radio")
     .optional()
     .isFloat({ min: 0 })
@@ -202,7 +196,13 @@ router.get("/:id", validateObjectId("id"), getBacheById);
  *       401:
  *         description: No autorizado
  */
-router.post("/", authenticate, upload.array("imagenes", 5), createBacheValidation, createBache);
+router.post(
+  "/",
+  authenticate,
+  upload.array("imagenes", 5),
+  createBacheValidation,
+  createBache,
+);
 
 /**
  * @swagger
@@ -247,7 +247,13 @@ router.post("/", authenticate, upload.array("imagenes", 5), createBacheValidatio
  *       404:
  *         description: Bache no encontrado
  */
-router.put("/:id", validateObjectId("id"), authenticate, upload.array("imagenes", 5), updateBache);
+router.put(
+  "/:id",
+  validateObjectId("id"),
+  authenticate,
+  upload.array("imagenes", 5),
+  updateBache,
+);
 
 /**
  * @swagger
@@ -258,7 +264,6 @@ router.put("/:id", validateObjectId("id"), authenticate, upload.array("imagenes"
  *       - Los administradores pueden modificar el estado libremente enviando JSON.
  *       - El autor del bache también puede cambiar el estado **siempre que** suba
  *         al menos una imagen de prueba (multipart/form-data con campo `imagenes`).
- *     tags: [Baches]
  *     tags: [Baches]
  *     security:
  *       - bearerAuth: []
@@ -321,7 +326,7 @@ router.patch(
   upload.array("imagenes", 5),
   updateEstadoValidation,
   handleValidationErrors,
-  updateEstado
+  updateEstado,
 );
 
 /**
@@ -358,4 +363,3 @@ router.patch(
 router.post("/:id/votar", validateObjectId("id"), authenticate, votarBache);
 
 export default router;
-
