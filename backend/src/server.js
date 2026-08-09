@@ -41,7 +41,7 @@ connectDB();
 app.use(
   helmet({
     crossOriginResourcePolicy: { policy: "cross-origin" },
-  })
+  }),
 );
 
 // CORS más restrictivo
@@ -50,7 +50,12 @@ const corsOptions = {
     // Permitir requests sin origin (Postman, mobile apps, etc.) solo en desarrollo
     const allowedOrigins = process.env.ALLOWED_ORIGINS
       ? process.env.ALLOWED_ORIGINS.split(",")
-      : ["http://localhost:3000", "http://localhost:5173", "http://localhost:5174"]; // Vite default ports
+      : [
+          "http://localhost:3000",
+          "http://localhost:5173",
+          "http://localhost:5174",
+          "https://baches-rosario-1.onrender.com",
+        ]; // Vite default ports
 
     // En desarrollo, permitir requests sin origin
     if (!origin && process.env.NODE_ENV !== "production") {
@@ -127,9 +132,10 @@ app.get("/api/health", (req, res) => {
 // Manejo de errores (no exponer detalles internos en producción)
 app.use((err, req, res, next) => {
   console.error(err.stack);
-  const message = process.env.NODE_ENV === "production"
-    ? "Error interno del servidor"
-    : (err.message || "Error interno del servidor");
+  const message =
+    process.env.NODE_ENV === "production"
+      ? "Error interno del servidor"
+      : err.message || "Error interno del servidor";
   res.status(500).json({ message });
 });
 
@@ -137,6 +143,7 @@ const PORT = process.env.PORT || 3001;
 
 server.listen(PORT, () => {
   console.log(`Servidor corriendo en puerto ${PORT}`);
-  console.log(`📚 Documentación Swagger disponible en http://localhost:${PORT}/api-docs`);
+  console.log(
+    `📚 Documentación Swagger disponible en http://localhost:${PORT}/api-docs`,
+  );
 });
-
